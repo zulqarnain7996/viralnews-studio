@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ViralNews Studio - AI & Social News Automator</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts: Inter, Bebas Neue, Montserrat, Noto Nastaliq Urdu, Noto Sans Arabic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&family=Noto+Nastaliq+Urdu:wght@400;700&family=Noto+Sans+Arabic:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <!-- App Styles -->
+  <link rel="stylesheet" href="/static/css/style.css?v=8.0">
+</head>
+<body class="bg-dark text-light">
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark border-bottom border-secondary sticky-top glass-nav px-3">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-white" href="#">
+        <span class="live-dot"></span>
+        <span class="brand-badge bg-danger px-2 py-1 rounded text-white fw-black">VIRAL NEWS</span>
+        <span class="brand-text text-white">STUDIO</span>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <ul class="nav nav-pills ms-auto me-3 gap-1 d-none d-md-flex" id="mainTab" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active fw-bold text-white" id="feed-tab" data-bs-toggle="tab" data-bs-target="#tab-feed" type="button">
+            <i class="fa-solid fa-newspaper me-1 text-danger"></i> News Aggregator
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fw-bold text-white" id="studio-tab" data-bs-toggle="tab" data-bs-target="#tab-studio" type="button">
+            <i class="fa-solid fa-wand-magic-sparkles me-1 text-warning"></i> Live Card Studio (19 Styles)
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fw-bold text-white" id="autopilot-tab" data-bs-toggle="tab" data-bs-target="#tab-autopilot" type="button">
+            <i class="fa-solid fa-robot me-1 text-info"></i> Auto-Pilot & Daily
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fw-bold text-white" id="history-tab" data-bs-toggle="tab" data-bs-target="#tab-history" type="button">
+            <i class="fa-solid fa-clock-rotate-left me-1 text-success"></i> Queue & History
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link fw-bold text-white" id="settings-tab" data-bs-toggle="tab" data-bs-target="#tab-settings" type="button">
+            <i class="fa-solid fa-gear me-1 text-primary"></i> Settings
+          </button>
+        </li>
+      </ul>
+
+      <!-- Language & Auto-Pilot Indicator -->
+      <div class="d-flex align-items-center gap-2">
+        <!-- Language Switcher Pills -->
+        <div class="btn-group btn-group-sm" role="group">
+          <button type="button" class="btn btn-outline-secondary btn-lang text-white" id="langUrduBtn" onclick="setLanguage('urdu')">
+            🇵🇰 اردو
+          </button>
+          <button type="button" class="btn btn-danger btn-lang active" id="langEnBtn" onclick="setLanguage('english')">
+            🇬🇧 English
+          </button>
+        </div>
+
+        <!-- Auto-Pilot Pill -->
+        <div id="autopilotStatusPill" class="badge rounded-pill bg-secondary px-3 py-2 d-flex align-items-center gap-1 cursor-pointer" onclick="switchTab('tab-autopilot')">
+          <span class="spinner-grow spinner-grow-sm text-warning" role="status" style="width: 8px; height: 8px;"></span>
+          <span id="autopilotStatusText" class="text-white fw-bold">Auto-Pilot: Checking...</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container-fluid py-3 px-md-4">
+
+    <div class="tab-content" id="mainTabContent">
+
+      <!-- ========================================== -->
+      <!-- TAB 1: NEWS AGGREGATOR & BULK SELECTION -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade show active" id="tab-feed" role="tabpanel">
+
+        <!-- Category & Search Bar Header -->
+        <div class="card bg-surface border-secondary shadow-sm mb-3">
+          <div class="card-body p-3">
+            <div class="row g-2 align-items-center">
+              
+              <!-- Category Filter Pills -->
+              <div class="col-12 col-lg-7 d-flex flex-wrap gap-2 align-items-center">
+                <span class="text-white small fw-bold me-1"><i class="fa-solid fa-filter me-1 text-danger"></i> CATEGORY:</span>
+                <button class="btn btn-sm btn-category active" data-cat="trending" onclick="setCategory('trending')">
+                  🔥 Trending (<span class="lang-label-trending">وائرل خبریں</span>)
+                </button>
+                <button class="btn btn-sm btn-category" data-cat="pakistan" onclick="setCategory('pakistan')">
+                  🇵🇰 Pakistan (<span class="lang-label-pakistan">پاکستان</span>)
+                </button>
+                <button class="btn btn-sm btn-category" data-cat="local" onclick="setCategory('local')">
+                  📍 Local (<span id="currentLocalCity">Lahore</span>)
+                </button>
+                <button class="btn btn-sm btn-category" data-cat="world" onclick="setCategory('world')">
+                  🌍 World (<span class="lang-label-world">دنیا</span>)
+                </button>
+                <button class="btn btn-sm btn-outline-light text-white" data-bs-toggle="modal" data-bs-target="#cityModal" title="Change City">
+                  <i class="fa-solid fa-location-dot text-danger"></i> City
+                </button>
+              </div>
+
+              <!-- Search & Refresh -->
+              <div class="col-12 col-lg-5">
+                <div class="input-group">
+                  <input type="text" id="newsSearchInput" class="form-control bg-dark border-secondary text-white" placeholder="Search topics or keywords (English / اردو)..." autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter') executeSearch()">
+                  <button class="btn btn-outline-light" onclick="executeSearch()">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </button>
+                  <button class="btn btn-danger fw-bold" onclick="refreshFeed(true)" title="Fetch Live RSS Now">
+                    <i class="fa-solid fa-rotate me-1" id="refreshIcon"></i> Refresh Live
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Sticky Bulk Action Toolbar -->
+        <div class="sticky-bulk-bar bg-surface-blur border border-secondary rounded p-2 mb-3 shadow d-flex flex-wrap align-items-center justify-content-between gap-2" id="bulkToolbar">
+          <div class="d-flex align-items-center gap-2">
+            <div class="form-check m-0 ms-2">
+              <input class="form-check-input" type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this.checked)">
+              <label class="form-check-label fw-bold text-white small" for="selectAllCheckbox">Select All</label>
+            </div>
+            <span class="badge bg-danger rounded-pill px-3 py-2 text-white fw-bold" id="selectedCountBadge">0 Selected</span>
+            <button class="btn btn-sm btn-outline-light text-white" onclick="selectTopN(5)">Top 5</button>
+            <button class="btn btn-sm btn-outline-secondary text-light" onclick="clearSelection()">Clear</button>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-warning text-dark fw-bold" onclick="bulkGenerateCards()" id="bulkGenBtn" disabled>
+              <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Bulk Generate Graphics (<span class="selected-num">0</span>)
+            </button>
+            <button class="btn btn-sm btn-primary fw-bold" onclick="bulkPostModal()" id="bulkPostBtn" disabled>
+              <i class="fa-brands fa-facebook me-1"></i> Bulk Post (<span class="selected-num">0</span>)
+            </button>
+            <button class="btn btn-sm btn-success fw-bold" onclick="bulkDownloadZip()" id="bulkZipBtn" disabled>
+              <i class="fa-solid fa-file-zipper me-1"></i> Download ZIP
+            </button>
+          </div>
+        </div>
+
+        <!-- News Feed Grid -->
+        <div id="newsLoadingSpinner" class="text-center py-5 d-none">
+          <div class="spinner-border text-danger" role="status" style="width: 3rem; height: 3rem;"></div>
+          <p class="mt-3 text-white fw-bold">Aggregating live news from Pakistan, local & world channels...</p>
+        </div>
+
+        <div class="row g-3" id="newsGrid">
+          <!-- News Cards rendered dynamically via JS -->
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 2: LIVE NEWS CARD STUDIO & CANVASES -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-studio" role="tabpanel">
+        <div class="row g-3">
+          
+          <!-- Left: Real-time Interactive Canvas Preview -->
+          <div class="col-12 col-xl-7">
+            <div class="card bg-surface border-secondary h-100 shadow">
+              <div class="card-header bg-dark d-flex justify-content-between align-items-center border-secondary py-2">
+                <span class="fw-bold text-white"><i class="fa-solid fa-palette me-1 text-danger"></i> Live Graphic Canvas (Broadcast HD 1080p)</span>
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-light active" id="btnRatioSquare" onclick="setStudioRatio('1:1')">1:1 Square (FB/Feed)</button>
+                  <button type="button" class="btn btn-outline-light" id="btnRatioVertical" onclick="setStudioRatio('9:16')">9:16 Vertical (TikTok/Reels)</button>
+                </div>
+              </div>
+              
+              <div class="card-body p-3 d-flex flex-column align-items-center justify-content-center bg-canvas-wrap">
+                <!-- HTML5 Canvas Rendering Target -->
+                <div class="canvas-container shadow-lg" id="canvasWrapper">
+                  <canvas id="newsCanvas" width="1080" height="1080"></canvas>
+                </div>
+                <div class="small text-white mt-2">
+                  <i class="fa-solid fa-circle-info text-info me-1"></i> Broadcast news graphic preview. Automatically formats Urdu RTL & English typography at full 1080px resolution.
+                </div>
+              </div>
+
+              <!-- Quick Canvas Action Bar -->
+              <div class="card-footer bg-dark border-secondary d-flex flex-wrap justify-content-between align-items-center gap-2 p-3">
+                <div class="d-flex gap-2">
+                  <button class="btn btn-success fw-bold" onclick="downloadCurrentCanvas()">
+                    <i class="fa-solid fa-download me-1"></i> Download PNG
+                  </button>
+                  <button class="btn btn-outline-light" onclick="copyStudioCaption()">
+                    <i class="fa-solid fa-copy me-1"></i> Copy Caption & Tags
+                  </button>
+                </div>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-primary fw-bold" onclick="publishStudioPost('facebook')">
+                    <i class="fa-brands fa-facebook me-1"></i> Post to FB Page
+                  </button>
+                  <button class="btn btn-info text-dark fw-bold" onclick="openTikTokPublishModal()">
+                    <i class="fa-brands fa-tiktok me-1"></i> Post to TikTok
+                  </button>
+                  <button class="btn btn-outline-info text-white fw-bold" onclick="publishStudioPost('telegram')" title="Publish to Telegram Channel">
+                    <i class="fa-brands fa-telegram me-1"></i> Telegram
+                  </button>
+                  <button class="btn btn-danger fw-bold" onclick="generateShortVideo()" id="genVideoBtn" title="Generate short video with voiceover">
+                    <i class="fa-solid fa-video me-1"></i> Short Video
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Live Studio Customization Controls -->
+          <div class="col-12 col-xl-5">
+            <div class="card bg-surface border-secondary shadow mb-3">
+              <div class="card-header bg-dark border-secondary fw-bold text-white d-flex justify-content-between align-items-center">
+                <span><i class="fa-solid fa-sliders me-1 text-warning"></i> Studio Editor & 19 Broadcast Templates</span>
+                <span class="badge bg-primary" id="currentLangBadge">ENGLISH</span>
+              </div>
+              <div class="card-body p-3">
+                
+                <!-- 19 Theme Palettes Categorized -->
+                <div class="mb-3">
+                  <label class="form-label text-white fw-bold d-flex justify-content-between">
+                    <span><i class="fa-solid fa-palette me-1 text-danger"></i> CHOOSE TEMPLATE STYLE</span>
+                    <span class="badge bg-danger text-white fw-bold">🔥 19 Broadcast Pro Styles</span>
+                  </label>
+
+                  <div class="theme-category-header text-warning fw-bold">✨ NEXT-GEN PRO STYLES (NEW - PERFECT IMAGE FIT)</div>
+                  <div class="grid-theme-buttons mb-2">
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="neon_cyber_split" onclick="setStudioTheme('neon_cyber_split')">
+                      <span class="color-dot" style="background:#00f0ff;box-shadow:0 0 8px #00f0ff;"></span> ⚡ Cyber Broadcast Pro
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="royal_gold_split" onclick="setStudioTheme('royal_gold_split')">
+                      <span class="color-dot" style="background:#ffd700;box-shadow:0 0 8px #ffd700;"></span> 👑 Royal Velvet & Gold
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="vox_spotlight_dark" onclick="setStudioTheme('vox_spotlight_dark')">
+                      <span class="color-dot" style="background:#ccff00;box-shadow:0 0 8px #ccff00;"></span> 🌍 Global Spotlight (Vox)
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="ticker_live_tv" onclick="setStudioTheme('ticker_live_tv')">
+                      <span class="color-dot" style="background:#cc0010;box-shadow:0 0 8px #cc0010;"></span> 📺 TV Live Ticker 24/7
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="cinematic_letterbox" onclick="setStudioTheme('cinematic_letterbox')">
+                      <span class="color-dot" style="background:#111111;border:1px solid #ff1e38;box-shadow:0 0 8px rgba(255,30,56,0.6);"></span> 🎬 Cinematic Letterbox
+                    </button>
+                  </div>
+
+                  <div class="theme-category-header">🇹🇷 Broadcast Split Templates (Recommended)</div>
+                  <div class="grid-theme-buttons mb-2">
+                    <button class="btn btn-sm active theme-btn text-start d-flex align-items-center gap-2" data-theme="turkiye_urdu_split" onclick="setStudioTheme('turkiye_urdu_split')">
+                      <span class="color-dot" style="background:#a5000a;"></span> 🇹🇷 Türkiye Urdu Red
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="turkiye_emerald_split" onclick="setStudioTheme('turkiye_emerald_split')">
+                      <span class="color-dot" style="background:#014b20;"></span> 🌿 Turkiye Emerald
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="turkiye_dark_split" onclick="setStudioTheme('turkiye_dark_split')">
+                      <span class="color-dot" style="background:#161923;"></span> 🌑 Turkiye Dark Split
+                    </button>
+                  </div>
+
+                  <div class="theme-category-header">💬 DW & Quote Cards</div>
+                  <div class="grid-theme-buttons mb-2">
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="dw_quote_blue" onclick="setStudioTheme('dw_quote_blue')">
+                      <span class="color-dot" style="background:#0096e6;"></span> 🔵 DW Urdu Sky Blue
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="dw_quote_dark" onclick="setStudioTheme('dw_quote_dark')">
+                      <span class="color-dot" style="background:#12161e;"></span> 🌐 DW Dark Quote
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="dw_quote_red" onclick="setStudioTheme('dw_quote_red')">
+                      <span class="color-dot" style="background:#b40a19;"></span> 🟥 DW Crimson Quote
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="quote_card" onclick="setStudioTheme('quote_card')">
+                      <span class="color-dot bg-secondary"></span> 🔲 Leadership Quote
+                    </button>
+                  </div>
+
+                  <div class="theme-category-header">📺 Classic TV Broadcast Cards</div>
+                  <div class="grid-theme-buttons">
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="breaking_red" onclick="setStudioTheme('breaking_red')">
+                      <span class="color-dot bg-danger"></span> 🔴 Breaking Red
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="pakistan_green" onclick="setStudioTheme('pakistan_green')">
+                      <span class="color-dot bg-success"></span> 🇵🇰 Pakistan Emerald
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="viral_dark" onclick="setStudioTheme('viral_dark')">
+                      <span class="color-dot bg-info"></span> ⬛ Dark Cyber / Noir
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="royal_blue" onclick="setStudioTheme('royal_blue')">
+                      <span class="color-dot bg-primary"></span> 🟦 Royal TV Anchor
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="buzz_yellow" onclick="setStudioTheme('buzz_yellow')">
+                      <span class="color-dot bg-warning"></span> 🟨 Viral Buzz Yellow
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="editorial_purple" onclick="setStudioTheme('editorial_purple')">
+                      <span class="color-dot" style="background: #9d4edd;"></span> 🟣 Dawn Purple
+                    </button>
+                    <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="urdu_khabarnama" onclick="setStudioTheme('urdu_khabarnama')">
+                      <span class="color-dot" style="background: #ff0055;"></span> 🚨 TV Khabarnama
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Category Tag & Page Name -->
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label text-white">HEADER BADGE</label>
+                    <input type="text" id="studioTagInput" class="form-control form-control-sm bg-dark border-secondary text-white fw-bold" value="🔴 بریکنگ نیوز" oninput="renderStudioCanvas()">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label text-white">PAGE BRAND NAME</label>
+                    <input type="text" id="studioPageNameInput" class="form-control form-control-sm bg-dark border-secondary text-white fw-bold" value="PAK NEWS 24/7" oninput="renderStudioCanvas()">
+                  </div>
+                </div>
+
+                <!-- Headline Input with Color, Alignment & Font Size -->
+                <div class="mb-3">
+                  <label class="form-label text-white d-flex justify-content-between">
+                    <span>HEADLINE TITLE</span>
+                    <span class="text-info cursor-pointer" onclick="transformHeadlineCase()"><i class="fa-solid fa-text-height"></i> Case</span>
+                  </label>
+                  <textarea id="studioTitleInput" class="form-control bg-dark border-secondary text-white fw-bold" rows="3" oninput="renderStudioCanvas()" placeholder="Enter breaking headline here..."></textarea>
+                  
+                  <!-- Headline Customization Row -->
+                  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2 p-2 rounded" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);">
+                    <div class="d-flex align-items-center gap-1">
+                      <span class="small text-white-50 fw-bold me-1">Color:</span>
+                      <button type="button" class="btn btn-xs headline-color-btn active" data-headline-color="#ffd700" title="Gold" style="background:#ffd700;width:22px;height:22px;border-radius:4px;border:1px solid #fff;" onclick="setHeadlineColor('#ffd700')"></button>
+                      <button type="button" class="btn btn-xs headline-color-btn" data-headline-color="#ffffff" title="White" style="background:#ffffff;width:22px;height:22px;border-radius:4px;border:1px solid #aaa;" onclick="setHeadlineColor('#ffffff')"></button>
+                      <button type="button" class="btn btn-xs headline-color-btn" data-headline-color="#00f0ff" title="Cyan" style="background:#00f0ff;width:22px;height:22px;border-radius:4px;border:1px solid #fff;" onclick="setHeadlineColor('#00f0ff')"></button>
+                      <button type="button" class="btn btn-xs headline-color-btn" data-headline-color="#ff3333" title="Red" style="background:#ff3333;width:22px;height:22px;border-radius:4px;border:1px solid #fff;" onclick="setHeadlineColor('#ff3333')"></button>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-1">
+                      <span class="small text-white-50 fw-bold me-1">Align:</span>
+                      <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 headline-align-btn" data-headline-align="right" title="Right (Urdu RTL)" onclick="setHeadlineAlign('right')"><i class="fa-solid fa-align-right"></i></button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 headline-align-btn active" data-headline-align="center" title="Center" onclick="setHeadlineAlign('center')"><i class="fa-solid fa-align-center"></i></button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 headline-align-btn" data-headline-align="left" title="Left" onclick="setHeadlineAlign('left')"><i class="fa-solid fa-align-left"></i></button>
+                      </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-1 flex-grow-1" style="min-width: 140px;">
+                      <span class="small text-white-50 fw-bold">Size:</span>
+                      <input type="range" class="form-range flex-grow-1 mx-1" id="studioFontSize" min="36" max="75" value="54" oninput="renderStudioCanvas()">
+                      <span class="small text-white fw-bold" id="studioFontSizeVal">54px</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Summary Details Input -->
+                <div class="mb-3">
+                  <label class="form-label text-white">STORY DETAILS / BULLETS (2-3 Lines)</label>
+                  <textarea id="studioSummaryInput" class="form-control bg-dark border-secondary text-white" rows="3" oninput="renderStudioCanvas()" placeholder="Key details that appear at the bottom box..."></textarea>
+                </div>
+
+                <!-- Footer Source & Social Handle -->
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label text-white">SOURCE CREDIT</label>
+                    <input type="text" id="studioSourceInput" class="form-control form-control-sm bg-dark border-secondary text-white fw-bold" value="بی بی سی اردو" oninput="renderStudioCanvas()">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label text-white">PAGE HANDLE</label>
+                    <input type="text" id="studioHandleInput" class="form-control form-control-sm bg-dark border-secondary text-white fw-bold" value="@PakNewsOfficial" oninput="renderStudioCanvas()">
+                  </div>
+                </div>
+
+                <!-- Image Controls with Darkness Overlay -->
+                <div class="mb-3">
+                  <label class="form-label text-white fw-bold d-flex justify-content-between">
+                    <span><i class="fa-solid fa-image me-1 text-danger"></i> BACKGROUND NEWS PHOTO</span>
+                    <span class="small text-info opacity-75">HD 1080p Editorial</span>
+                  </label>
+                  <div class="input-group input-group-sm mb-2">
+                    <input type="text" id="studioImageUrlInput" class="form-control bg-dark border-secondary text-white" placeholder="Paste image URL here..." onchange="loadStudioImage(this.value)">
+                    <button class="btn btn-outline-light text-white" onclick="loadStudioImage(document.getElementById('studioImageUrlInput').value)">Load</button>
+                  </div>
+                  
+                  <!-- Photo Darkness Tint Slider -->
+                  <div class="d-flex align-items-center gap-2 mb-2 p-1 px-2 rounded" style="background: rgba(255,255,255,0.03);">
+                    <span class="small text-white-50 fw-bold"><i class="fa-solid fa-circle-half-stroke me-1"></i> Dark Tint:</span>
+                    <input type="range" class="form-range flex-grow-1" id="studioDarknessInput" min="0" max="75" value="0" oninput="setPhotoDarkness(this.value)">
+                    <span class="small text-info fw-bold" id="studioDarknessVal">0%</span>
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="btn btn-sm btn-outline-light text-white w-100 cursor-pointer mb-2">
+                      <i class="fa-solid fa-cloud-arrow-up me-1 text-warning"></i> Upload Custom Photo from Computer
+                      <input type="file" id="studioFileUpload" accept="image/*" class="d-none" onchange="uploadCustomStudioImage(this)">
+                    </label>
+                    <div class="small text-white-50 mb-1 fw-bold">1-Click News Topic Presets:</div>
+                    <div class="d-flex flex-wrap gap-1">
+                      <button class="btn btn-xs btn-outline-danger text-white py-1 px-2" onclick="useThematicBackdrop('breaking')">🚨 Breaking</button>
+                      <button class="btn btn-xs btn-outline-success text-white py-1 px-2" onclick="useThematicBackdrop('pakistan')">🇵🇰 Pakistan</button>
+                      <button class="btn btn-xs btn-outline-warning text-white py-1 px-2" onclick="useThematicBackdrop('military')">🎖️ Army/Security</button>
+                      <button class="btn btn-xs btn-outline-primary text-white py-1 px-2" onclick="useThematicBackdrop('politics')">🏛️ Politics</button>
+                      <button class="btn btn-xs btn-outline-info text-white py-1 px-2" onclick="useThematicBackdrop('sports')">🏏 Cricket</button>
+                      <button class="btn btn-xs btn-outline-warning text-white py-1 px-2" onclick="useThematicBackdrop('economy')">💰 Gold/Economy</button>
+                      <button class="btn btn-xs btn-outline-secondary text-white py-1 px-2" onclick="useThematicBackdrop('court')">⚖️ Court/Law</button>
+                      <button class="btn btn-xs btn-outline-light text-white py-1 px-2" onclick="useThematicBackdrop('world')">🌍 World</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Social Caption & Hashtag Preview Box with Templates -->
+                <div class="mb-2">
+                  <label class="form-label text-white d-flex justify-content-between align-items-center mb-1">
+                    <span><i class="fa-solid fa-share-nodes me-1 text-info"></i> VIRAL SOCIAL CAPTION</span>
+                    <div class="d-flex gap-2">
+                      <span class="text-warning cursor-pointer small fw-bold" onclick="copyStudioCaption()"><i class="fa-solid fa-copy me-1"></i> Copy</span>
+                      <span class="text-info cursor-pointer small fw-bold" onclick="regenerateStudioCaption()"><i class="fa-solid fa-rotate me-1"></i> Refresh</span>
+                    </div>
+                  </label>
+                  
+                  <!-- Caption Quick Presets -->
+                  <div class="d-flex flex-wrap gap-1 mb-2">
+                    <button type="button" class="btn btn-xs btn-outline-warning text-white py-1 px-2" onclick="applyCaptionTemplate('viral')">🔥 Full Viral</button>
+                    <button type="button" class="btn btn-xs btn-outline-danger text-white py-1 px-2" onclick="applyCaptionTemplate('breaking')">⚡ Breaking</button>
+                    <button type="button" class="btn btn-xs btn-outline-success text-white py-1 px-2" onclick="applyCaptionTemplate('bullets')">📋 Bullets</button>
+                    <button type="button" class="btn btn-xs btn-outline-info text-white py-1 px-2" onclick="applyCaptionTemplate('english')">🇬🇧 English</button>
+                  </div>
+
+                  <textarea id="studioCaptionInput" class="form-control bg-dark border-secondary text-white" rows="6" dir="auto"></textarea>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 3: AUTO-PILOT & DAILY AUTOMATION -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-autopilot" role="tabpanel">
+        <div class="row g-3">
+          
+          <div class="col-12 col-lg-5">
+            <div class="card bg-surface border-secondary shadow">
+              <div class="card-header bg-dark border-secondary fw-bold text-white d-flex justify-content-between align-items-center">
+                <span><i class="fa-solid fa-robot me-1 text-warning"></i> Auto-Pilot Configuration</span>
+                <span class="badge bg-danger" id="autopilotStatusBadge">DISABLED</span>
+              </div>
+              <div class="card-body p-3">
+                <p class="text-white small mb-3">
+                  When enabled, the automated background worker continuously tracks breaking and trending news, automatically creates Facebook-ready graphics, and publishes them directly to your Facebook Page / TikTok webhook without manual work.
+                </p>
+
+                <!-- Enable Switch -->
+                <div class="form-check form-switch fs-5 mb-3 p-2 bg-dark rounded border border-secondary d-flex justify-content-between align-items-center ps-5">
+                  <label class="form-check-label fw-bold text-white" for="autoPilotSwitch">Daily Auto-Pilot Worker</label>
+                  <input class="form-check-input me-2" type="checkbox" role="switch" id="autoPilotSwitch" onchange="toggleAutoPilot(this.checked)">
+                </div>
+
+                <!-- Frequency -->
+                <div class="mb-3">
+                  <label class="form-label text-white">POSTING FREQUENCY</label>
+                  <select id="autoPilotInterval" class="form-select bg-dark border-secondary text-white">
+                    <option value="1">Every 1 Hour (High-Frequency Newsdesk)</option>
+                    <option value="2">Every 2 Hours (Breaking Alerts)</option>
+                    <option value="4" selected>Every 4 Hours (Recommended)</option>
+                    <option value="6">Every 6 Hours</option>
+                    <option value="12">Twice Daily (Morning & Evening)</option>
+                    <option value="24">Once Daily</option>
+                  </select>
+                </div>
+
+                <!-- Category Preference -->
+                <div class="mb-3">
+                  <label class="form-label text-white">TARGET CATEGORY FOR AUTO-PILOT</label>
+                  <select id="autoPilotCategory" class="form-select bg-dark border-secondary text-white">
+                    <option value="trending" selected>🔥 Trending & Viral (Top stories)</option>
+                    <option value="pakistan">🇵🇰 Pakistan National News</option>
+                    <option value="local">📍 Local City News</option>
+                    <option value="world">🌍 World Breaking News</option>
+                  </select>
+                </div>
+
+                <!-- Max Posts per Run -->
+                <div class="mb-3">
+                  <label class="form-label text-white">POSTS PER CYCLE</label>
+                  <select id="autoPilotMaxPosts" class="form-select bg-dark border-secondary text-white">
+                    <option value="1">1 Top Article</option>
+                    <option value="2" selected>2 Top Articles</option>
+                    <option value="3">3 Top Articles</option>
+                    <option value="5">5 Top Articles</option>
+                  </select>
+                </div>
+
+                <!-- Manual Trigger Button -->
+                <div class="d-grid gap-2 pt-2">
+                  <button class="btn btn-warning fw-bold text-dark py-2" onclick="triggerAutoPilotNow()">
+                    <i class="fa-solid fa-play me-1"></i> Run Auto-Pilot Now (Test Run)
+                  </button>
+                  <button class="btn btn-outline-light text-white py-2" onclick="saveAutoPilotSettings()">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Save Scheduler Settings
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Auto-Pilot Execution Logs -->
+          <div class="col-12 col-lg-7">
+            <div class="card bg-surface border-secondary shadow h-100">
+              <div class="card-header bg-dark border-secondary fw-bold text-white d-flex justify-content-between align-items-center">
+                <span><i class="fa-solid fa-terminal me-1 text-info"></i> Scheduler Activity & Logs</span>
+                <button class="btn btn-sm btn-outline-light text-white" onclick="loadSchedulerLogs()"><i class="fa-solid fa-rotate"></i></button>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+                  <table class="table table-dark table-hover table-striped mb-0 small">
+                    <thead>
+                      <tr>
+                        <th>Time</th>
+                        <th>Action</th>
+                        <th>Details</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="schedulerLogsBody">
+                      <!-- Rendered dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 4: QUEUE & PUBLISHING HISTORY -->
+      <!-- ========================================== -->
+      <!-- TAB 4: QUEUE & HISTORY -->
+      <div class="tab-pane fade" id="tab-history" role="tabpanel">
+        
+        <!-- Queue & Rate Limit Top Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-md-4">
+            <div class="p-3 bg-surface rounded border border-secondary d-flex justify-content-between align-items-center shadow">
+              <div>
+                <div class="small text-light fw-bold">PENDING IN QUEUE</div>
+                <h3 class="text-warning fw-black mb-0" id="queuePendingCount">0</h3>
+                <div class="small text-light">Auto-staggered posts</div>
+              </div>
+              <i class="fa-solid fa-list-check fa-2x text-warning opacity-75"></i>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="p-3 bg-surface rounded border border-secondary d-flex justify-content-between align-items-center shadow">
+              <div>
+                <div class="small text-light fw-bold">TOTAL PUBLISHED</div>
+                <h3 class="text-success fw-black mb-0" id="historySuccessCount">0</h3>
+                <div class="small text-light">Live on Facebook / Telegram</div>
+              </div>
+              <i class="fa-solid fa-circle-check fa-2x text-success opacity-75"></i>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="p-3 bg-surface rounded border border-secondary d-flex justify-content-between align-items-center shadow">
+              <div>
+                <div class="small text-light fw-bold">META API RATE LIMIT</div>
+                <h5 class="text-info fw-bold mb-1" id="queueMetaStatusBadge">Optimal (0%)</h5>
+                <div class="small text-light" id="queueCooldownNote">Safe to publish</div>
+              </div>
+              <i class="fa-solid fa-shield-halved fa-2x text-info opacity-75"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 1: Active Staggered Publishing Queue -->
+        <div class="card bg-surface border-secondary shadow mb-4">
+          <div class="card-header bg-dark border-secondary d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-white"><i class="fa-solid fa-clock me-1 text-warning"></i> Staggered Publishing Queue (Auto-Resuming)</span>
+            <button class="btn btn-sm btn-outline-warning text-white fw-bold" onclick="loadPostQueue()"><i class="fa-solid fa-rotate"></i> Refresh Queue</button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-dark table-hover table-striped mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 80px;">Graphic</th>
+                    <th>Headline</th>
+                    <th>Platform</th>
+                    <th>Scheduled For</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="queueTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Published Posts History -->
+        <div class="card bg-surface border-secondary shadow">
+          <div class="card-header bg-dark border-secondary d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-white"><i class="fa-solid fa-clock-rotate-left me-1 text-danger"></i> Published Posts & Social Activity</span>
+            <button class="btn btn-sm btn-outline-light text-white" onclick="loadPostHistory()"><i class="fa-solid fa-rotate"></i> Refresh History</button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-dark table-hover table-striped mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 100px;">Graphic</th>
+                    <th>Headline & Caption</th>
+                    <th>Platform</th>
+                    <th>Status</th>
+                    <th>Date Published</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- TAB 5: SETTINGS & SOCIAL CREDENTIALS -->
+      <!-- ========================================== -->
+      <div class="tab-pane fade" id="tab-settings" role="tabpanel">
+        <div class="row g-3">
+          
+          <!-- Left: Real Posting Credentials -->
+          <div class="col-12 col-lg-6">
+            <div class="card bg-surface border-secondary shadow">
+              <div class="card-header bg-dark border-secondary fw-bold text-white d-flex justify-content-between align-items-center">
+                <span><i class="fa-brands fa-facebook me-1 text-primary"></i> Facebook Page & Real Posting</span>
+                <span class="badge bg-success" id="postingModeBadge">LIVE POSTING READY</span>
+              </div>
+              <div class="card-body p-3">
+                
+                <!-- Live Posting Mode Switch -->
+                <div class="p-3 mb-3 bg-dark rounded border border-secondary">
+                  <div class="form-check form-switch fs-5 d-flex justify-content-between align-items-center ps-0">
+                    <div>
+                      <span class="fw-bold text-white fs-6">🔴 Real Live Posting Mode</span>
+                      <div class="small text-white">When enabled, publishes actual photos directly to your connected Facebook Page & Telegram.</div>
+                    </div>
+                    <input class="form-check-input ms-3" type="checkbox" role="switch" id="settingRealModeSwitch" onchange="togglePostingMode(this.checked)">
+                  </div>
+                </div>
+
+                <!-- Facebook Page ID -->
+                <div class="mb-3">
+                  <label class="form-label text-white">FACEBOOK PAGE ID</label>
+                  <input type="text" id="settingFbPageId" class="form-control bg-dark border-secondary text-white fw-bold" placeholder="e.g. 102938475612345">
+                  <div class="small text-white mt-1">Found in your Facebook Page -> About -> Page Transparency, or Meta Business Suite.</div>
+                </div>
+
+                <!-- Page Access Token -->
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="form-label text-white mb-0">FACEBOOK PAGE ACCESS TOKEN (Never Expires)</label>
+                    <button class="btn btn-xs btn-outline-warning text-white py-0 px-2" type="button" data-bs-toggle="modal" data-bs-target="#metaTokenGuideModal">
+                      <i class="fa-solid fa-circle-question me-1"></i> How to Get Never-Expiring Token
+                    </button>
+                  </div>
+                  <div class="input-group">
+                    <input type="password" id="settingFbToken" class="form-control bg-dark border-secondary text-white font-monospace" placeholder="EAAxxxxxxx...">
+                    <button class="btn btn-outline-light text-white" type="button" onclick="toggleTokenVisibility()"><i class="fa-solid fa-eye" id="tokenEyeIcon"></i></button>
+                  </div>
+                  <div class="small text-white mt-1">Generated from <a href="https://developers.facebook.com/tools/explorer/" target="_blank" class="text-info fw-bold">Meta Graph API Explorer</a>. Select your <b>Page</b> in the dropdown so it never expires!</div>
+                </div>
+
+                <!-- Test Connection Button -->
+                <div class="mb-3">
+                  <button class="btn btn-sm btn-outline-info text-white fw-bold" onclick="testFacebookToken()">
+                    <i class="fa-solid fa-plug me-1"></i> Test Facebook Connection Now
+                  </button>
+                  <div id="fbTestResult" class="small mt-2 d-none"></div>
+                </div>
+
+                <!-- Meta Rate Limit Health & API Usage Card -->
+                <div class="p-3 mb-3 bg-dark rounded border border-secondary" id="metaRateLimitCard">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-white fs-6"><i class="fa-solid fa-shield-halved text-success me-1"></i> Meta Rate Limit & API Health</span>
+                    <span class="badge bg-success" id="metaHealthBadge">OPTIMAL (0%)</span>
+                  </div>
+                  <div class="progress bg-secondary mb-2" style="height: 8px;">
+                    <div id="metaUsageProgressBar" class="progress-bar bg-success" role="progressbar" style="width: 0%;"></div>
+                  </div>
+                  <div class="d-flex justify-content-between small text-light">
+                    <span id="metaCooldownInfo">Status: Normal. Safe to post without throttling.</span>
+                    <span id="metaLastCheckedTime" class="text-secondary"></span>
+                  </div>
+                </div>
+
+                <!-- Automated Publishing Interval -->
+                <div class="mb-3">
+                  <label class="form-label text-white fw-bold"><i class="fa-solid fa-hourglass-half text-warning me-1"></i> AUTOMATED PUBLISHING INTERVAL</label>
+                  <select id="settingPublishInterval" class="form-select bg-dark border-secondary text-white fw-bold">
+                    <option value="30">Every 30 Minutes</option>
+                    <option value="45" selected>Every 45 Minutes (Recommended - Prevents Meta Throttling)</option>
+                    <option value="60">Every 60 Minutes (Standard Broadcast)</option>
+                    <option value="90">Every 90 Minutes (Low Frequency)</option>
+                    <option value="120">Every 2 Hours</option>
+                  </select>
+                  <div class="small text-light mt-1">Staggers queued posts automatically with exponential backoff so Meta never flags your Page for spam.</div>
+                </div>
+
+                <hr class="border-secondary my-3">
+
+                <!-- Telegram Channel Posting -->
+                <h6 class="text-white fw-bold mb-2"><i class="fa-brands fa-telegram text-info me-1"></i> Telegram News Channel (100% Free & Real)</h6>
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label text-white">TELEGRAM BOT TOKEN</label>
+                    <input type="text" id="settingTgToken" class="form-control bg-dark border-secondary text-white" placeholder="123456:ABC-DEF...">
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label text-white">CHANNEL ID</label>
+                    <input type="text" id="settingTgChannel" class="form-control bg-dark border-secondary text-white" placeholder="@YourChannel">
+                  </div>
+                </div>
+
+                <!-- TikTok / Webhook -->
+                <div class="mb-2">
+                  <label class="form-label text-white">TIKTOK / WEBHOOK URL (Zapier / Make / Discord)</label>
+                  <input type="text" id="settingWebhookUrl" class="form-control bg-dark border-secondary text-white" placeholder="https://hooks.zapier.com/hooks/catch/... or Discord Webhook">
+                  <div class="small text-white mt-1">Sends graphic image file & caption to TikTok automation workflows.</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Default Branding & City -->
+          <div class="col-12 col-lg-6">
+            <div class="card bg-surface border-secondary shadow mb-3">
+              <div class="card-header bg-dark border-secondary fw-bold text-white">
+                <i class="fa-solid fa-sliders me-1 text-warning"></i> Default Branding & City
+              </div>
+              <div class="card-body p-3">
+                
+                <div class="mb-3">
+                  <label class="form-label text-white">DEFAULT PAGE BRAND NAME</label>
+                  <input type="text" id="settingPageName" class="form-control bg-dark border-secondary text-white fw-bold" value="PAK NEWS 24/7">
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label text-white">DEFAULT SOCIAL HANDLE</label>
+                  <input type="text" id="settingPageHandle" class="form-control bg-dark border-secondary text-white fw-bold" value="@PakNewsOfficial">
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label text-white">LOCAL NEWS DEFAULT CITY</label>
+                  <input type="text" id="settingLocalCity" class="form-control bg-dark border-secondary text-white fw-bold" value="Lahore">
+                </div>
+
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label class="form-label text-white">DEFAULT THEME</label>
+                    <select id="settingDefaultTheme" class="form-select bg-dark border-secondary text-white fw-bold">
+                      <option value="neon_cyber_split">⚡ Cyber Broadcast Pro (NEW)</option>
+                      <option value="royal_gold_split">👑 Royal Velvet & Gold (NEW)</option>
+                      <option value="vox_spotlight_dark">🌍 Global Spotlight Vox (NEW)</option>
+                      <option value="ticker_live_tv">📺 TV Live Ticker 24/7 (NEW)</option>
+                      <option value="cinematic_letterbox">🎬 Cinematic Letterbox (NEW)</option>
+                      <option value="turkiye_urdu_split" selected>🇹🇷 Türkiye Urdu Red</option>
+                      <option value="turkiye_emerald_split">🌿 Turkiye Emerald</option>
+                      <option value="turkiye_dark_split">🌑 Turkiye Dark Split</option>
+                      <option value="breaking_red">🔴 Breaking Red</option>
+                      <option value="pakistan_green">🇵🇰 Pakistan Green</option>
+                      <option value="viral_dark">⬛ Dark Cyber</option>
+                      <option value="royal_blue">🟦 Royal TV Blue</option>
+                      <option value="buzz_yellow">🟨 Viral Buzz Yellow</option>
+                      <option value="editorial_purple">🟣 Dawn Purple</option>
+                      <option value="quote_card">🔲 Leadership Quote</option>
+                      <option value="urdu_khabarnama">🚨 TV Khabarnama</option>
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label text-white">DEFAULT RATIO</label>
+                    <select id="settingDefaultRatio" class="form-select bg-dark border-secondary text-white fw-bold">
+                      <option value="1:1">1:1 Square (FB/Insta)</option>
+                      <option value="9:16">9:16 Vertical (TikTok/Reels)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="d-grid gap-2 pt-2">
+                  <button class="btn btn-primary fw-bold py-2" onclick="saveAllAppSettings()">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Save All Settings
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: TIKTOK QUICK-PUBLISH STUDIO -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="tiktokModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-surface border-secondary text-white">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title"><i class="fa-brands fa-tiktok text-info me-2"></i> Post to TikTok Studio</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-white">Publish your graphic to TikTok in 2 quick steps:</p>
+          <div class="bg-dark p-3 rounded border border-secondary mb-3">
+            <h6 class="text-warning fw-bold mb-2">Step 1: Download & Copy Caption</h6>
+            <div class="d-flex gap-2 mb-2">
+              <button class="btn btn-sm btn-success fw-bold flex-grow-1" onclick="downloadCurrentCanvas()">
+                <i class="fa-solid fa-download me-1"></i> 1. Download 9:16 Image
+              </button>
+              <button class="btn btn-sm btn-outline-light text-white fw-bold flex-grow-1" onclick="copyStudioCaption()">
+                <i class="fa-solid fa-copy me-1"></i> 2. Copy Hashtags
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-dark p-3 rounded border border-secondary mb-3">
+            <h6 class="text-info fw-bold mb-2">Step 2: Open TikTok Web Creator</h6>
+            <p class="small text-white mb-2">Click below to open TikTok Upload in your browser and drag the image directly into your feed / story:</p>
+            <a href="https://www.tiktok.com/creator-center/upload" target="_blank" class="btn btn-primary w-100 fw-bold">
+              <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Open TikTok Web Upload
+            </a>
+          </div>
+
+          <div>
+            <span class="text-white small fw-bold">Or dispatch via automated webhook:</span>
+            <button class="btn btn-sm btn-outline-secondary text-white w-100 mt-1" onclick="publishStudioPost('webhook')">
+              <i class="fa-solid fa-paper-plane me-1"></i> Dispatch to Webhook / Zapier
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CHANGE LOCAL CITY -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="cityModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-surface border-secondary text-white">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title"><i class="fa-solid fa-location-dot me-2 text-danger"></i> Select Local City</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label text-white small">Choose a popular Pakistani city or enter custom:</label>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <button class="btn btn-sm btn-outline-light text-white" onclick="chooseCityQuick('Lahore')">Lahore (لاہور)</button>
+            <button class="btn btn-sm btn-outline-light text-white" onclick="chooseCityQuick('Karachi')">Karachi (کراچی)</button>
+            <button class="btn btn-sm btn-outline-light text-white" onclick="chooseCityQuick('Islamabad')">Islamabad (اسلام آباد)</button>
+            <button class="btn btn-sm btn-outline-light text-white" onclick="chooseCityQuick('Rawalpindi')">Rawalpindi (راولپنڈی)</button>
+            <button class="btn btn-sm btn-outline-light text-white" onclick="chooseCityQuick('Peshawar')">Peshawar (پشاور)</button>
+            <button class="btn btn-sm btn-outline-light text-white" onclick="chooseCityQuick('Quetta')">Quetta (کوئٹہ)</button>
+            <button class="btn btn-sm btn-outline-light text-white" onclick="chooseCityQuick('Multan')">Multan (ملتان)</button>
+            <button class="btn btn-sm btn-outline-light text-white" onclick="chooseCityQuick('Faisalabad')">Faisalabad (فیصل آباد)</button>
+          </div>
+          <input type="text" id="customCityInput" class="form-control bg-dark border-secondary text-white" placeholder="Or enter any city name...">
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" onclick="saveCustomCity()">Apply City</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: BULK POST CONFIRMATION -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="bulkPostModalElement" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-surface border-secondary text-white">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title"><i class="fa-brands fa-facebook me-2 text-primary"></i> Bulk Social Media Publish</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-white">You have selected <strong id="modalBulkCount">0</strong> news articles.</p>
+          <p class="small text-white">ViralNews Studio will automatically render broadcast cards for all selected items and publish them to your chosen destination.</p>
+          
+          <div class="mb-3">
+            <label class="form-label text-white">PUBLISHING TARGET</label>
+            <select id="modalBulkTarget" class="form-select bg-dark border-secondary text-white">
+              <option value="facebook">Facebook Page (Direct Meta API)</option>
+              <option value="webhook">Webhook (TikTok / Zapier / Make)</option>
+              <option value="both">Both Facebook & Webhook</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label text-white">CARD THEME</label>
+            <select id="modalBulkTheme" class="form-select bg-dark border-secondary text-white">
+              <option value="neon_cyber_split">⚡ Cyber Broadcast Pro (NEW)</option>
+              <option value="royal_gold_split">👑 Royal Velvet & Gold (NEW)</option>
+              <option value="vox_spotlight_dark">🌍 Global Spotlight Vox (NEW)</option>
+              <option value="ticker_live_tv">📺 TV Live Ticker 24/7 (NEW)</option>
+              <option value="cinematic_letterbox">🎬 Cinematic Letterbox (NEW)</option>
+              <option value="turkiye_urdu_split" selected>🇹🇷 Türkiye Urdu Red</option>
+              <option value="turkiye_emerald_split">🌿 Turkiye Emerald</option>
+              <option value="turkiye_dark_split">🌑 Turkiye Dark Split</option>
+              <option value="breaking_red">🔴 Breaking Red</option>
+              <option value="pakistan_green">🇵🇰 Pakistan Emerald</option>
+              <option value="viral_dark">⬛ Dark Cyber</option>
+              <option value="royal_blue">🟦 Royal TV Blue</option>
+              <option value="buzz_yellow">🟨 Viral Buzz Yellow</option>
+              <option value="editorial_purple">🟣 Dawn Purple</option>
+              <option value="quote_card">🔲 Leadership Quote</option>
+              <option value="urdu_khabarnama">🚨 TV Khabarnama</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary fw-bold" onclick="executeBulkPost()">
+            <span class="spinner-border spinner-border-sm d-none" id="bulkPostSpinner"></span>
+            Confirm & Publish All
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    <div id="liveToast" class="toast bg-surface border-secondary text-white shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header bg-dark text-white border-secondary">
+        <i class="fa-solid fa-circle-check text-success me-2" id="toastIcon"></i>
+        <strong class="me-auto text-white" id="toastTitle">Notification</strong>
+        <small class="text-light">Just now</small>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+      </div>
+      <div class="toast-body text-white" id="toastMessage">Action completed successfully.</div>
+    </div>
+  </div>
+
+  <!-- Video Generation Modal -->
+  <div class="modal fade" id="videoGenModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content bg-dark text-white border-secondary">
+        <div class="modal-header bg-danger text-white border-secondary">
+          <h5 class="modal-title"><i class="fa-solid fa-video me-2"></i>Short Video Generator (9:16 TikTok / Reels / Shorts)</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div id="videoGenStatus" class="alert alert-info d-none"></div>
+
+          <!-- Video Article Info Preview -->
+          <div id="videoArticlePreview" class="p-3 mb-3 bg-black rounded border border-secondary">
+            <span class="badge bg-danger mb-2">TARGET HEADLINE</span>
+            <h6 id="videoModalTitle" class="fw-bold text-white mb-2" style="line-height:1.5;"></h6>
+            <div class="small text-light">
+              <span id="videoModalSource" class="badge bg-secondary me-2"></span>
+              <span id="videoModalLang" class="badge bg-info text-dark"></span>
+            </div>
+          </div>
+
+          <!-- Live Progress Spinner -->
+          <div id="videoGenSpinner" class="text-center d-none py-4">
+            <div class="spinner-border text-danger" style="width:3.5rem;height:3.5rem;"></div>
+            <h5 class="mt-3 text-white fw-bold">Creating 9:16 Video with Voiceover...</h5>
+            <p class="text-light small">Synthesizing TTS narration, animating Ken Burns zoom & rendering MP4 frames</p>
+            <div class="badge bg-warning text-dark px-3 py-2 fs-6" id="videoTimerBadge">Elapsed: 0s</div>
+          </div>
+
+          <!-- Generated Video Player -->
+          <div id="videoResult" class="d-none text-center">
+            <div class="alert alert-success py-2">
+              <i class="fa-solid fa-circle-check me-1"></i> Video successfully generated! Watch preview below:
+            </div>
+            <video id="generatedVideoPlayer" controls playsinline style="max-width:320px;max-height:540px;border:3px solid #dc3545;border-radius:12px;background:#000;box-shadow:0 8px 24px rgba(0,0,0,0.8);"></video>
+            <div class="mt-3 d-flex gap-2 justify-content-center flex-wrap">
+              <a id="videoDownloadBtn" href="#" download class="btn btn-success fw-bold">
+                <i class="fa-solid fa-download me-1"></i> Download MP4
+              </a>
+              <button class="btn btn-primary fw-bold" onclick="postVideoToFB()">
+                <i class="fa-brands fa-facebook me-1"></i> Post to FB Page
+              </button>
+              <button class="btn btn-outline-info text-white fw-bold" onclick="postVideoToTelegram()">
+                <i class="fa-brands fa-telegram me-1"></i> Send to Telegram
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button class="btn btn-outline-light" data-bs-dismiss="modal">Close</button>
+          <button class="btn btn-danger fw-bold" id="videoGenStartBtn" onclick="doGenerateVideo()">
+            <i class="fa-solid fa-film me-1"></i> Generate Video Now
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meta Never-Expiring Token Guide Modal -->
+  <div class="modal fade" id="metaTokenGuideModal" tabindex="-1" aria-labelledby="metaTokenGuideModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-dark border-secondary text-white shadow-lg">
+        <div class="modal-header border-secondary bg-surface py-3">
+          <h5 class="modal-title fw-bold text-warning" id="metaTokenGuideModalLabel">
+            <i class="fa-solid fa-key me-2 text-warning"></i> How to Get a Never-Expiring Facebook Page Token
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="alert alert-warning py-2 mb-3 small">
+            <i class="fa-solid fa-triangle-exclamation me-1"></i> <b>Why did my post say "Session Expired"?</b><br>
+            Meta Graph API Explorer gives a <b>User Token</b> by default which expires in 1 hour. Follow these 4 quick steps to generate a <b>Page Token that NEVER expires</b>:
+          </div>
+
+          <div class="list-group list-group-flush bg-transparent">
+            <div class="list-group-item bg-transparent text-white border-secondary px-0 py-2">
+              <span class="badge bg-primary me-2">Step 1</span>
+              Open <a href="https://developers.facebook.com/tools/explorer/" target="_blank" class="text-info fw-bold text-decoration-underline">Meta Graph API Explorer <i class="fa-solid fa-arrow-up-right-from-square small"></i></a>.
+            </div>
+
+            <div class="list-group-item bg-transparent text-white border-secondary px-0 py-2">
+              <span class="badge bg-danger me-2">Step 2 (CRITICAL)</span>
+              In the right-hand panel, find the <b>"User or Page"</b> dropdown.<br>
+              <span class="text-warning">👉 Click it and select your Facebook Page: <b>Zulqarnain Combat Updates</b></span> (DO NOT leave it on "User Token").
+            </div>
+
+            <div class="list-group-item bg-transparent text-white border-secondary px-0 py-2">
+              <span class="badge bg-success me-2">Step 3</span>
+              Under <b>Permissions</b>, ensure these two permissions are active:
+              <ul class="mb-0 mt-1">
+                <li><code>pages_manage_posts</code> (Allows publishing photos and videos)</li>
+                <li><code>pages_read_engagement</code> (Allows reading page stats & usage)</li>
+              </ul>
+            </div>
+
+            <div class="list-group-item bg-transparent text-white border-secondary px-0 py-2">
+              <span class="badge bg-info text-dark me-2">Step 4</span>
+              Click the blue <b>Generate Access Token</b> button.<br>
+              Copy the long string starting with <code>EAA...</code>, paste it into the <b>Facebook Page Access Token</b> box in Settings, and click <b>Save All Settings</b>!
+            </div>
+          </div>
+
+          <div class="p-3 mt-3 rounded bg-surface border border-info small">
+            <i class="fa-solid fa-circle-check text-success me-1"></i> <b>Verified:</b> Tokens generated by selecting a Facebook Page directly under "User or Page" do not expire unless your Facebook account password changes!
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <a href="https://developers.facebook.com/tools/explorer/" target="_blank" class="btn btn-outline-info text-white fw-bold">
+            <i class="fa-solid fa-external-link me-1"></i> Open Graph API Explorer
+          </a>
+          <button type="button" class="btn btn-primary fw-bold" data-bs-dismiss="modal">I Have My Token</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/js/card_canvas.js?v=8.0"></script>
+  <script src="/static/js/app.js?v=8.0"></script>
+
+  <!-- Video Generator Controller (Runs after Bootstrap & App.js are loaded) -->
+  <script>
+  let _lastVideoResult = null;
+  let _videoTimerInterval = null;
+
+  function getCurrentStudioArticle() {
+    const inputTitle = document.getElementById('studioTitleInput')?.value?.trim();
+    const inputSummary = document.getElementById('studioSummaryInput')?.value?.trim();
+    const inputSource = document.getElementById('studioSourceInput')?.value?.trim() || 'News Desk';
+    const inputImg = document.getElementById('studioImageUrlInput')?.value?.trim() || '';
+
+    if (window.studioArticle && window.studioArticle.title) {
+      return {
+        ...window.studioArticle,
+        title: inputTitle || window.studioArticle.title,
+        summary: inputSummary || window.studioArticle.summary || '',
+        source: inputSource || window.studioArticle.source || 'News Desk',
+        image_url: inputImg || window.studioArticle.image_url || ''
+      };
+    }
+
+    if (inputTitle) {
+      return {
+        id: 'studio_' + Date.now(),
+        title: inputTitle,
+        summary: inputSummary || inputTitle,
+        source: inputSource,
+        image_url: inputImg,
+        category: 'breaking',
+        language: /[\u0600-\u06FF]/.test(inputTitle) ? 'urdu' : 'english'
+      };
+    }
+
+    return null;
+  }
+
+  function generateShortVideo() {
+    const article = getCurrentStudioArticle();
+    if (!article || !article.title) {
+      if (typeof showToast === 'function') {
+        showToast('Headline Required', 'Please enter a news title in the Studio first.', false);
+      } else {
+        alert('Please enter a headline in the Studio first.');
+      }
+      return;
+    }
+
+    window.studioArticle = article;
+
+    // Populate modal preview
+    document.getElementById('videoModalTitle').innerText = article.title;
+    document.getElementById('videoModalSource').innerText = article.source || 'News Desk';
+    const isUrdu = (article.language === 'urdu' || /[\u0600-\u06FF]/.test(article.title));
+    document.getElementById('videoModalLang').innerText = isUrdu ? 'Urdu Voiceover (TTS)' : 'English Voiceover';
+
+    document.getElementById('videoGenStatus').classList.add('d-none');
+    document.getElementById('videoGenSpinner').classList.add('d-none');
+    document.getElementById('videoResult').classList.add('d-none');
+    document.getElementById('videoArticlePreview').classList.remove('d-none');
+    document.getElementById('videoGenStartBtn').classList.remove('d-none');
+    _lastVideoResult = null;
+
+    const modalEl = document.getElementById('videoGenModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  }
+
+  async function doGenerateVideo() {
+    const article = getCurrentStudioArticle();
+    if (!article) return;
+
+    document.getElementById('videoGenStartBtn').classList.add('d-none');
+    document.getElementById('videoGenSpinner').classList.remove('d-none');
+    document.getElementById('videoResult').classList.add('d-none');
+    document.getElementById('videoGenStatus').classList.add('d-none');
+
+    // Start timer counter
+    let seconds = 0;
+    const timerBadge = document.getElementById('videoTimerBadge');
+    timerBadge.innerText = 'Elapsed: 0s';
+    clearInterval(_videoTimerInterval);
+    _videoTimerInterval = setInterval(() => {
+      seconds++;
+      timerBadge.innerText = `Elapsed: ${seconds}s (creating frames & TTS)`;
+    }, 1000);
+
+    const settings = JSON.parse(localStorage.getItem('viral_settings') || '{}');
+    const pageName = document.getElementById('studioPageNameInput')?.value || settings.page_name || 'PAK NEWS 24/7';
+    const pageHandle = document.getElementById('studioHandleInput')?.value || settings.page_handle || '@PakNewsOfficial';
+    const customImg = document.getElementById('studioImageUrlInput')?.value || article.image_url;
+
+    const body = {
+      article: article,
+      page_name: pageName,
+      page_handle: pageHandle,
+      custom_image_url: customImg
+    };
+
+    try {
+      const resp = await fetch('/api/cards/generate-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await resp.json();
+
+      clearInterval(_videoTimerInterval);
+      document.getElementById('videoGenSpinner').classList.add('d-none');
+
+      if (data.success && data.video) {
+        _lastVideoResult = data.video;
+        const player = document.getElementById('generatedVideoPlayer');
+        const dlBtn = document.getElementById('videoDownloadBtn');
+
+        player.src = data.video.web_url + '?t=' + Date.now();
+        dlBtn.href = data.video.web_url;
+        dlBtn.download = data.video.filename;
+
+        document.getElementById('videoArticlePreview').classList.add('d-none');
+        document.getElementById('videoResult').classList.remove('d-none');
+        document.getElementById('videoGenStartBtn').classList.add('d-none');
+
+        if (typeof showToast === 'function') {
+          showToast('Video Ready', `Created ${data.video.duration}s video in ${seconds}s!`, true);
+        }
+      } else {
+        document.getElementById('videoGenStartBtn').classList.remove('d-none');
+        showVideoStatus('danger', 'Video generation failed: ' + (data.detail || JSON.stringify(data)));
+      }
+    } catch (e) {
+      clearInterval(_videoTimerInterval);
+      document.getElementById('videoGenSpinner').classList.add('d-none');
+      document.getElementById('videoGenStartBtn').classList.remove('d-none');
+      showVideoStatus('danger', 'Error generating video: ' + e.message);
+    }
+  }
+
+  function showVideoStatus(type, msg) {
+    const el = document.getElementById('videoGenStatus');
+    el.className = 'alert alert-' + type;
+    el.textContent = msg;
+    el.classList.remove('d-none');
+  }
+
+  async function postVideoToFB() {
+    if (!_lastVideoResult) return;
+    const article = getCurrentStudioArticle();
+    if (typeof showToast === 'function') {
+      showToast('Publishing Video', 'Posting short video to Facebook Page...', true);
+    }
+    try {
+      const resp = await fetch('/api/social/post-facebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_path: _lastVideoResult.file_path,
+          caption: article ? article.title : 'News Update',
+          test_mode: false
+        })
+      });
+      const data = await resp.json();
+      if (typeof showToast === 'function') {
+        showToast(data.success ? 'FB Success' : 'FB Error', data.message || data.error || 'Done', data.success);
+      }
+    } catch (e) {
+      if (typeof showToast === 'function') {
+        showToast('FB Error', e.message, false);
+      }
+    }
+  }
+
+  async function postVideoToTelegram() {
+    if (!_lastVideoResult) return;
+    const article = getCurrentStudioArticle();
+    if (typeof showToast === 'function') {
+      showToast('Sending to Telegram', 'Uploading video to Telegram Channel...', true);
+    }
+    try {
+      const resp = await fetch('/api/social/post-telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_path: _lastVideoResult.file_path,
+          caption: article ? article.title : 'News Update'
+        })
+      });
+      const data = await resp.json();
+      if (typeof showToast === 'function') {
+        showToast(data.success ? 'Telegram Success' : 'Telegram Error', data.message || data.error || 'Done', data.success);
+      }
+    } catch (e) {
+      if (typeof showToast === 'function') {
+        showToast('Telegram Error', e.message, false);
+      }
+    }
+  }
+  </script>
+</body>
+</html>
