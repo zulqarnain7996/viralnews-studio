@@ -553,7 +553,12 @@ function getCategoryBadgeLabel(cat, lang) {
     case 'pakistan': return isUrdu ? '🇵🇰 پاکستان' : '🇵🇰 Pakistan';
     case 'local': return isUrdu ? `📍 ${appState.currentCity}` : `📍 ${appState.currentCity}`;
     case 'world': return isUrdu ? '🌍 دنیا' : '🌍 World';
-    default: return isUrdu ? '🔥 بریکنگ' : '🔥 Trending';
+    case 'tech': return isUrdu ? '💻 ٹیکنالوجی' : '💻 Tech & AI';
+    case 'war': return isUrdu ? '⚔️ جنگ و دفاع' : '⚔️ War & Defense';
+    case 'iran_us': return isUrdu ? '🇮🇷 ایران و امریکہ' : '🇮🇷 Iran-US';
+    case 'russia_ukraine': return isUrdu ? '🇷🇺 روس یوکرین' : '🇷🇺 Russia-Ukraine';
+    case 'china_india': return isUrdu ? '🇨🇳 چین و بھارت' : '🇨🇳 China-India';
+    default: return isUrdu ? '🔥 وائرل' : '🔥 Trending';
   }
 }
 

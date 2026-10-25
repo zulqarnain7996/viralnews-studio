@@ -306,6 +306,70 @@ def _synthesize_voiceover(text: str, voice_id: str, speed_opt: str, pitch_opt: s
 
     return False
 
+def _build_python_video_template(template_name, width, height, split_y, title, source, page_name, page_handle, is_urdu):
+    master = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    d = ImageDraw.Draw(master)
+    header_h = int(split_y * 0.22)
+
+    # 1. Header Bar
+    if template_name == "combat_steel_war":
+        d.rectangle([(0, 0), (width, header_h)], fill=(17, 22, 29, 255))
+        d.rectangle([(0, header_h - 4), (width, header_h)], fill=(234, 179, 8, 255))
+        d.text((35, header_h - 32), f"⚔️ {page_name}", font=_font(22), fill=(250, 204, 21))
+    elif template_name == "viral_neon_cyber":
+        d.rectangle([(0, 0), (width, header_h)], fill=(8, 12, 20, 255))
+        d.rectangle([(0, header_h - 4), (width, header_h)], fill=(6, 182, 212, 255))
+        d.text((35, header_h - 32), f"🔥 {page_name}", font=_font(22), fill=(6, 182, 212))
+    elif template_name == "golden_prestige_bulletin":
+        d.rectangle([(0, 0), (width, header_h)], fill=(5, 12, 30, 255))
+        d.rectangle([(0, header_h - 5), (width, header_h)], fill=(234, 179, 8, 255))
+        d.text((35, header_h - 32), f"👑 {page_name}", font=_font(22), fill=(254, 240, 138))
+    else:
+        d.rectangle([(0, 0), (width, header_h)], fill=(143, 0, 12, 255))
+        d.rectangle([(0, header_h - 5), (width, header_h)], fill=(255, 215, 0, 255))
+        d.text((35, header_h - 32), f"🛡️ {page_name}", font=_font(22), fill=(255, 255, 255))
+
+    # 2. Lower Third Base Container
+    if template_name == "combat_steel_war":
+        d.rectangle([(0, split_y), (width, height)], fill=(15, 20, 26, 245))
+        d.rectangle([(0, split_y), (width, split_y + 48)], fill=(220, 38, 38, 255))
+        d.rectangle([(0, split_y + 46), (width, split_y + 50)], fill=(250, 204, 21, 255))
+        tag_text = _shape("⚠️ عسکری و دفاعی اپڈیٹ // COMBAT ALERT") if is_urdu else "⚠️ COMBAT ALERT // WAR BULLETIN"
+        d.text((30, split_y + 12), tag_text, font=_font(20, is_urdu), fill=(255, 255, 255))
+    elif template_name == "viral_neon_cyber":
+        d.rectangle([(0, split_y), (width, height)], fill=(8, 12, 20, 245))
+        d.rectangle([(0, split_y), (width, split_y + 6)], fill=(6, 182, 212, 255))
+        d.rounded_rectangle([(30, split_y + 16), (220, split_y + 50)], radius=6, fill=(236, 72, 153, 255))
+        d.text((44, split_y + 22), "🔥 VIRAL NEWS", font=_font(18), fill=(255, 255, 255))
+    elif template_name == "golden_prestige_bulletin":
+        d.rectangle([(0, split_y), (width, height)], fill=(5, 12, 30, 245))
+        d.rectangle([(0, split_y), (width, split_y + 5)], fill=(234, 179, 8, 255))
+        d.rounded_rectangle([(30, split_y + 16), (240, split_y + 52)], radius=4, fill=(15, 23, 42, 255), outline=(234, 179, 8, 255), width=2)
+        d.text((44, split_y + 22), "👑 SPECIAL REPORT", font=_font(18), fill=(254, 240, 138))
+    else:
+        d.rectangle([(0, split_y), (width, height)], fill=(12, 16, 25, 245))
+        d.rectangle([(0, split_y), (width, split_y + 52)], fill=(185, 28, 28, 255))
+        d.rectangle([(0, split_y + 50), (width, split_y + 54)], fill=(255, 215, 0, 255))
+        tag_text = _shape("🚨 بریکنگ نیوز | BREAKING NEWS") if is_urdu else "🚨 BREAKING NEWS"
+        d.text((30, split_y + 12), tag_text, font=_font(22, is_urdu), fill=(255, 255, 255))
+
+    # 3. Headline Typography
+    lines = _wrap(title, width=28 if is_urdu else 36)[:3]
+    h_y = split_y + 80
+    font_h = _font(36 if is_urdu else 32, is_urdu)
+    text_color = (250, 204, 21) if template_name == "combat_steel_war" else (255, 255, 255)
+    for line in lines:
+        disp_l = _shape(line) if is_urdu else line
+        d.text((35, h_y), disp_l, font=font_h, fill=text_color)
+        h_y += 55 if is_urdu else 44
+
+    # 4. Footer Ticker
+    d.rectangle([(0, height - 46), (width, height)], fill=(6, 9, 16, 255))
+    d.rectangle([(0, height - 46), (width, height - 44)], fill=(234, 179, 8, 255))
+    d.text((30, height - 34), f"📢 {source} • {page_handle}", font=_font(16), fill=(148, 163, 184))
+
+    return master
+
 # ── Core Generator ───────────────────────────────────────────────────────────
 
 def generate_news_video(article: dict, options: dict = None) -> dict:
@@ -408,21 +472,36 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
     card_data = options.get("card_image_data")
     master_card = _decode_base64_image(card_data)
 
-    # If no canvas card provided, generate one from image_generator
+    video_template = options.get("video_template", "breaking_red_broadcast")
+
+    # If no canvas card provided from client, use dedicated video template
     if not master_card:
-        try:
-            from app.image_generator import generate_news_card
-            card_res = generate_news_card(article, {
-                "theme": "turkiye_urdu_split",
-                "aspect_ratio": "1:1" if aspect_ratio == "1:1" else ("16:9" if aspect_ratio == "16:9" else "9:16"),
-                "page_name": page_name,
-                "page_handle": page_handle,
-                "custom_image_url": options.get("custom_image_url")
-            })
-            if card_res and os.path.exists(card_res.get("file_path", "")):
-                master_card = Image.open(card_res["file_path"]).convert("RGBA")
-        except Exception as e:
-            print(f"[VideoGen] Fallback master card error: {e}")
+        if video_template != "studio_canvas":
+            master_card = _build_python_video_template(
+                template_name=video_template,
+                width=width,
+                height=height,
+                split_y=split_y,
+                title=title,
+                source=source,
+                page_name=page_name,
+                page_handle=page_handle,
+                is_urdu=is_urdu
+            )
+        else:
+            try:
+                from app.image_generator import generate_news_card
+                card_res = generate_news_card(article, {
+                    "theme": "turkiye_urdu_split",
+                    "aspect_ratio": "1:1" if aspect_ratio == "1:1" else ("16:9" if aspect_ratio == "16:9" else "9:16"),
+                    "page_name": page_name,
+                    "page_handle": page_handle,
+                    "custom_image_url": options.get("custom_image_url")
+                })
+                if card_res and os.path.exists(card_res.get("file_path", "")):
+                    master_card = Image.open(card_res["file_path"]).convert("RGBA")
+            except Exception as e:
+                print(f"[VideoGen] Fallback master card error: {e}")
 
     if master_card:
         master_card = master_card.resize((width, height), Image.Resampling.LANCZOS)

@@ -92,27 +92,42 @@
             <div class="row g-2 align-items-center">
               
               <!-- Category Filter Pills -->
-              <div class="col-12 col-lg-7 d-flex flex-wrap gap-2 align-items-center">
-                <span class="text-white small fw-bold me-1"><i class="fa-solid fa-filter me-1 text-danger"></i> CATEGORY:</span>
+              <div class="col-12 col-lg-8 d-flex flex-wrap gap-1 align-items-center">
+                <span class="text-white small fw-bold me-1"><i class="fa-solid fa-filter me-1 text-danger"></i> TOPIC:</span>
                 <button class="btn btn-sm btn-category active" data-cat="trending" onclick="setCategory('trending')">
-                  🔥 Trending (<span class="lang-label-trending">وائرل خبریں</span>)
+                  🔥 Trending (<span class="lang-label-trending">وائرل</span>)
                 </button>
                 <button class="btn btn-sm btn-category" data-cat="pakistan" onclick="setCategory('pakistan')">
                   🇵🇰 Pakistan (<span class="lang-label-pakistan">پاکستان</span>)
                 </button>
-                <button class="btn btn-sm btn-category" data-cat="local" onclick="setCategory('local')">
-                  📍 Local (<span id="currentLocalCity">Lahore</span>)
-                </button>
                 <button class="btn btn-sm btn-category" data-cat="world" onclick="setCategory('world')">
                   🌍 World (<span class="lang-label-world">دنیا</span>)
                 </button>
-                <button class="btn btn-sm btn-outline-light text-white" data-bs-toggle="modal" data-bs-target="#cityModal" title="Change City">
-                  <i class="fa-solid fa-location-dot text-danger"></i> City
+                <button class="btn btn-sm btn-category" data-cat="war" onclick="setCategory('war')">
+                  ⚔️ War (<span class="lang-label-war">جنگ و دفاع</span>)
+                </button>
+                <button class="btn btn-sm btn-category" data-cat="iran_us" onclick="setCategory('iran_us')">
+                  🇮🇷 Iran-US (<span class="lang-label-iran">ایران و امریکہ</span>)
+                </button>
+                <button class="btn btn-sm btn-category" data-cat="russia_ukraine" onclick="setCategory('russia_ukraine')">
+                  🇷🇺 Russia-Ukraine (<span class="lang-label-ru">روس یوکرین</span>)
+                </button>
+                <button class="btn btn-sm btn-category" data-cat="china_india" onclick="setCategory('china_india')">
+                  🇨🇳 China-India (<span class="lang-label-ci">چین بھارت</span>)
+                </button>
+                <button class="btn btn-sm btn-category" data-cat="tech" onclick="setCategory('tech')">
+                  💻 Tech (<span class="lang-label-tech">ٹیک</span>)
+                </button>
+                <button class="btn btn-sm btn-category" data-cat="local" onclick="setCategory('local')">
+                  📍 Local (<span id="currentLocalCity">Lahore</span>)
+                </button>
+                <button class="btn btn-sm btn-outline-light text-white py-0 px-2" data-bs-toggle="modal" data-bs-target="#cityModal" title="Change City">
+                  <i class="fa-solid fa-location-dot text-danger"></i>
                 </button>
               </div>
 
               <!-- Search & Refresh -->
-              <div class="col-12 col-lg-5">
+              <div class="col-12 col-lg-4">
                 <div class="input-group">
                   <input type="text" id="newsSearchInput" class="form-control bg-dark border-secondary text-white" placeholder="Search topics or keywords (English / اردو)..." autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter') executeSearch()">
                   <button class="btn btn-outline-light" onclick="executeSearch()">
@@ -1118,15 +1133,33 @@
           <!-- Video Production Controls Form -->
           <div id="videoOptionsForm" class="mb-3">
             <div class="row g-2 mb-3">
-              <div class="col-6 col-md-4">
-                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-crop-simple me-1 text-warning"></i> ASPECT RATIO</label>
-                <select id="videoOptRatio" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
-                  <option value="9:16" selected>📱 9:16 Vertical (TikTok/Reels/Shorts)</option>
-                  <option value="1:1">🔲 1:1 Square (FB/Insta Feed)</option>
-                  <option value="16:9">📺 16:9 Landscape (YouTube/TV)</option>
+              <div class="col-12 col-md-6">
+                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-layer-group me-1 text-danger"></i> DEDICATED VIDEO TEMPLATE</label>
+                <select id="videoOptTemplate" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
+                  <option value="breaking_red_broadcast" selected>🚨 Breaking News Red Broadcast (TV Newsroom)</option>
+                  <option value="combat_steel_war">⚔️ Combat & War Steel Alert (Geopolitics / Military)</option>
+                  <option value="viral_neon_cyber">🔥 Viral Neon Cyber (TikTok & Reels Modern)</option>
+                  <option value="golden_prestige_bulletin">👑 Golden Prestige Bulletin (Royal Navy & Gold)</option>
+                  <option value="studio_canvas">🎨 Studio Canvas Card (Exact Studio Layout)</option>
                 </select>
               </div>
-              <div class="col-6 col-md-4">
+              <div class="col-6 col-md-3">
+                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-crop-simple me-1 text-warning"></i> ASPECT RATIO</label>
+                <select id="videoOptRatio" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
+                  <option value="9:16" selected>📱 9:16 Vertical (Reels/TikTok)</option>
+                  <option value="1:1">🔲 1:1 Square (Feed)</option>
+                  <option value="16:9">📺 16:9 Landscape (YouTube)</option>
+                </select>
+              </div>
+              <div class="col-6 col-md-3">
+                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-gauge-high me-1 text-warning"></i> VOICE CADENCE</label>
+                <select id="videoOptSpeed" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
+                  <option value="news_fast" selected>⚡ Fast & Urgent</option>
+                  <option value="normal">🎙️ Standard</option>
+                  <option value="slow">📖 Calm</option>
+                </select>
+              </div>
+              <div class="col-12">
                 <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-microphone me-1 text-info"></i> REPORTER VOICE</label>
                 <select id="videoOptVoice" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
                   <option value="ur-PK-AsadNeural" selected>🎙️ اسد (پاکستانی مرد نیوز اینکر)</option>
@@ -1137,14 +1170,6 @@
                   <option value="en-GB-RyanNeural">🇬🇧 Ryan (BBC UK Reporter)</option>
                   <option value="en-US-JennyNeural">🇺🇸 Jenny (US Female Anchor)</option>
                   <option value="mute">🔇 Mute Voice (Music Only)</option>
-                </select>
-              </div>
-              <div class="col-12 col-md-4">
-                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-gauge-high me-1 text-warning"></i> VOICE CADENCE</label>
-                <select id="videoOptSpeed" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
-                  <option value="news_fast" selected>⚡ TV News Bulletin (Fast & Urgent)</option>
-                  <option value="normal">🎙️ Standard Broadcast</option>
-                  <option value="slow">📖 Calm & Deliberate</option>
                 </select>
               </div>
             </div>
@@ -1479,6 +1504,175 @@
     }
   }
 
+  function generateDedicatedVideoCard(templateName, ratio, article, pageName, pageHandle) {
+    let w = 1080, h = 1920, splitY = Math.floor(h * 0.54);
+    if (ratio === '1:1') {
+      w = 1080; h = 1080; splitY = Math.floor(h * 0.52);
+    } else if (ratio === '16:9') {
+      w = 1920; h = 1080; splitY = Math.floor(h * 0.58);
+    }
+
+    const vCanvas = document.createElement('canvas');
+    vCanvas.width = w;
+    vCanvas.height = h;
+    const ctx = vCanvas.getContext('2d');
+    const isUrdu = (article.language === 'urdu' || /[\u0600-\u06FF]/.test(article.title));
+    const titleText = (article.title || '').trim();
+
+    // ── 1. Top Header Bar ──
+    const headerH = Math.floor(splitY * 0.22);
+    if (templateName === 'combat_steel_war') {
+      ctx.fillStyle = '#11161d';
+      ctx.fillRect(0, 0, w, headerH);
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(0, headerH - 4, w, 4);
+      // Brand Pill
+      ctx.fillStyle = '#1e2632';
+      ctx.beginPath();
+      ctx.roundRect(25, 20, Math.min(w * 0.6, 460), headerH - 35, 8);
+      ctx.fill();
+      ctx.fillStyle = '#facc15';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.fillText('⚔️ ' + (pageName || 'Zulqarnain Combat Updates'), 40, headerH - 26);
+    } else if (templateName === 'viral_neon_cyber') {
+      ctx.fillStyle = '#080c14';
+      ctx.fillRect(0, 0, w, headerH);
+      const grad = ctx.createLinearGradient(0, 0, w, 0);
+      grad.addColorStop(0, '#06b6d4');
+      grad.addColorStop(1, '#ec4899');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, headerH - 4, w, 4);
+      ctx.fillStyle = '#06b6d4';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.fillText('🔥 ' + (pageName || 'VIRAL NEWS 24/7'), 35, headerH - 26);
+    } else if (templateName === 'golden_prestige_bulletin') {
+      ctx.fillStyle = '#050c1e';
+      ctx.fillRect(0, 0, w, headerH);
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(0, headerH - 5, w, 5);
+      ctx.fillStyle = '#fef08a';
+      ctx.font = 'bold 22px serif';
+      ctx.fillText('👑 ' + (pageName || 'SPECIAL BULLETIN'), 35, headerH - 26);
+    } else {
+      // breaking_red_broadcast
+      ctx.fillStyle = '#8f000c';
+      ctx.fillRect(0, 0, w, headerH);
+      ctx.fillStyle = '#ffd700';
+      ctx.fillRect(0, headerH - 5, w, 5);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.fillText('🛡️ ' + (pageName || 'PAK NEWS 24/7'), 35, headerH - 26);
+    }
+
+    // ── 2. Lower Third Base Container (from splitY to h) ──
+    const lowerH = h - splitY;
+    if (templateName === 'combat_steel_war') {
+      ctx.fillStyle = 'rgba(15, 20, 26, 0.96)';
+      ctx.fillRect(0, splitY, w, lowerH);
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(0, splitY, w, 50);
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(0, splitY + 48, w, 4);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 20px sans-serif';
+      ctx.fillText('⚠️ WAR ALERT // عسکری و دفاعی اپڈیٹ', 30, splitY + 33);
+    } else if (templateName === 'viral_neon_cyber') {
+      ctx.fillStyle = 'rgba(8, 12, 20, 0.95)';
+      ctx.fillRect(0, splitY, w, lowerH);
+      const grad2 = ctx.createLinearGradient(0, splitY, w, splitY);
+      grad2.addColorStop(0, '#06b6d4');
+      grad2.addColorStop(1, '#ec4899');
+      ctx.fillStyle = grad2;
+      ctx.fillRect(0, splitY, w, 6);
+      ctx.fillStyle = '#ec4899';
+      ctx.beginPath();
+      ctx.roundRect(30, splitY + 18, 200, 36, 6);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText('🔥 VIRAL NEWS', 48, splitY + 42);
+    } else if (templateName === 'golden_prestige_bulletin') {
+      ctx.fillStyle = 'rgba(5, 12, 30, 0.96)';
+      ctx.fillRect(0, splitY, w, lowerH);
+      ctx.fillStyle = '#eab308';
+      ctx.fillRect(0, splitY, w, 5);
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.roundRect(30, splitY + 18, 220, 38, 4);
+      ctx.fill();
+      ctx.strokeStyle = '#eab308';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#fef08a';
+      ctx.font = 'bold 16px serif';
+      ctx.fillText('👑 SPECIAL REPORT', 48, splitY + 43);
+    } else {
+      ctx.fillStyle = 'rgba(12, 16, 25, 0.96)';
+      ctx.fillRect(0, splitY, w, lowerH);
+      ctx.fillStyle = '#b91c1c';
+      ctx.fillRect(0, splitY, w, 52);
+      ctx.fillStyle = '#ffd700';
+      ctx.fillRect(0, splitY + 50, w, 4);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 22px sans-serif';
+      ctx.fillText(isUrdu ? '🚨 بریکنگ نیوز | BREAKING NEWS' : '🚨 BREAKING NEWS UPDATE', 30, splitY + 34);
+    }
+
+    // ── 3. Headline Typography ──
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 4;
+
+    const fontFace = isUrdu ? '"Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Noto Sans Arabic", serif' : '"Inter", "Montserrat", "Arial Black", sans-serif';
+    const fontSize = isUrdu ? 38 : 34;
+    ctx.font = `bold ${fontSize}px ${fontFace}`;
+    ctx.fillStyle = (templateName === 'combat_steel_war') ? '#facc15' : '#ffffff';
+    ctx.textAlign = isUrdu ? 'right' : 'left';
+    ctx.direction = isUrdu ? 'rtl' : 'ltr';
+
+    const maxWidth = w - 80;
+    const words = titleText.split(' ');
+    let lines = [];
+    let curLine = '';
+    for (let i = 0; i < words.length; i++) {
+      let testLine = curLine ? curLine + ' ' + words[i] : words[i];
+      if (ctx.measureText(testLine).width > maxWidth && curLine) {
+        lines.push(curLine);
+        curLine = words[i];
+        if (lines.length >= 3) break;
+      } else {
+        curLine = testLine;
+      }
+    }
+    if (curLine && lines.length < 3) lines.push(curLine);
+
+    const textStartY = splitY + (templateName === 'viral_neon_cyber' || templateName === 'golden_prestige_bulletin' ? 95 : 85);
+    const lineSpacing = isUrdu ? 65 : 48;
+    const textX = isUrdu ? (w - 40) : 40;
+
+    lines.forEach((line, i) => {
+      ctx.fillText(line, textX, textStartY + (i * lineSpacing));
+    });
+    ctx.restore();
+
+    // ── 4. Footer Info Ticker ──
+    const footerH = 46;
+    ctx.fillStyle = '#060910';
+    ctx.fillRect(0, h - footerH, w, footerH);
+    ctx.fillStyle = '#eab308';
+    ctx.fillRect(0, h - footerH, w, 2);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '15px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.direction = 'ltr';
+    const sourceText = article.source || 'News Desk';
+    ctx.fillText(`📢 ${sourceText}  •  ${pageHandle || '@PakNewsOfficial'}`, 30, h - 16);
+
+    return vCanvas.toDataURL('image/png', 0.98);
+  }
+
   async function doGenerateVideo() {
     const article = getCurrentStudioArticle();
     if (!article) return;
@@ -1504,6 +1698,7 @@
     const customImg = document.getElementById('studioImageUrlInput')?.value || article.image_url;
 
     // Advanced options from modal
+    const templateChoice = document.getElementById('videoOptTemplate')?.value || 'breaking_red_broadcast';
     const aspect_ratio = document.getElementById('videoOptRatio')?.value || '9:16';
     const voice_id = document.getElementById('videoOptVoice')?.value || 'ur-PK-AsadNeural';
     const voice_speed = document.getElementById('videoOptSpeed')?.value || 'news_fast';
@@ -1526,8 +1721,10 @@
     const mute_audio = (voice_id === 'mute');
 
     let cardImageData = null;
-    if (typeof canvas !== 'undefined' && canvas) {
+    if (templateChoice === 'studio_canvas' && typeof canvas !== 'undefined' && canvas) {
       cardImageData = canvas.toDataURL('image/png', 0.98);
+    } else {
+      cardImageData = generateDedicatedVideoCard(templateChoice, aspect_ratio, article, pageName, pageHandle);
     }
 
     const body = {
@@ -1537,6 +1734,7 @@
       custom_image_url: finalImages[0] || customImg,
       image_urls: finalImages,
       card_image_data: cardImageData,
+      video_template: templateChoice,
       aspect_ratio: aspect_ratio,
       voice_id: voice_id,
       voice_lang: voice_id,

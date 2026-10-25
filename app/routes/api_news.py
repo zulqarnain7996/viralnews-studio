@@ -27,9 +27,9 @@ def list_news(
             "articles": articles
         }
     
-    # Otherwise try cached from database first for instant loading (works for both Urdu & English)
-    cached = get_articles(category=category, search=query, limit=limit)
-    if not cached:
+    # Otherwise try cached from database first for instant loading (matching both category and language)
+    cached = get_articles(category=category, language=language, search=query, limit=limit)
+    if not cached or len(cached) < 4:
         articles = fetch_news_by_category(category=category, city=city, query=query, language=language, limit=limit)
     else:
         articles = cached
@@ -39,6 +39,7 @@ def list_news(
         "count": len(articles),
         "category": category,
         "city": city,
+        "language": language,
         "articles": articles
     }
 

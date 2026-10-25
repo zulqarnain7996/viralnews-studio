@@ -229,6 +229,7 @@ class VideoGenerateRequest(BaseModel):
     custom_image_url: Optional[str] = None
     image_urls:       Optional[List[str]] = None
     card_image_data:  Optional[str] = None
+    video_template:   Optional[str] = "breaking_red_broadcast"
     aspect_ratio:     Optional[str] = "9:16"
     voice_lang:       Optional[str] = "auto"
     voice_id:         Optional[str] = None
@@ -259,6 +260,7 @@ def generate_video(req: VideoGenerateRequest):
         "custom_image_url": req.custom_image_url,
         "image_urls":       req.image_urls or ([req.custom_image_url] if req.custom_image_url else []),
         "card_image_data":  req.card_image_data,
+        "video_template":   req.video_template or "breaking_red_broadcast",
         "aspect_ratio":     req.aspect_ratio or "9:16",
         "voice_lang":       req.voice_lang or "auto",
         "voice_id":         req.voice_id,

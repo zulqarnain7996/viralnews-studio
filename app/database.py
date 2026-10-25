@@ -45,9 +45,14 @@ def init_db():
                 image_url TEXT,
                 published_at TEXT,
                 fetched_at TEXT,
-                status TEXT DEFAULT 'new'
+                status TEXT DEFAULT 'new',
+                language TEXT DEFAULT 'english'
             )
         """)
+        try:
+            cursor.execute("ALTER TABLE articles ADD COLUMN language TEXT DEFAULT 'english'")
+        except Exception:
+            pass
         
         # Post Queue table
         cursor.execute("""
@@ -241,9 +246,9 @@ def save_articles_batch(articles):
         cursor = conn.cursor()
         for a in articles:
             cursor.execute("""
-                INSERT OR IGNORE INTO articles 
-                (id, category, source, title, summary, link, image_url, published_at, fetched_at, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT OR REPLACE INTO articles 
+                (id, category, source, title, summary, link, image_url, published_at, fetched_at, status, language)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 a.get("id"),
                 a.get("category"),
@@ -254,11 +259,12 @@ def save_articles_batch(articles):
                 a.get("image_url", ""),
                 a.get("published_at", ""),
                 datetime.now().isoformat(),
-                "new"
+                "new",
+                a.get("language", "english")
             ))
         conn.commit()
 
-def get_articles(category=None, search=None, limit=50, offset=0):
+def get_articles(category=None, language=None, search=None, limit=50, offset=0):
     with get_connection() as conn:
         cursor = conn.cursor()
         query = "SELECT * FROM articles WHERE 1=1"
@@ -267,6 +273,10 @@ def get_articles(category=None, search=None, limit=50, offset=0):
         if category and category.lower() != "all":
             query += " AND category = ?"
             params.append(category.lower())
+            
+        if language and language.lower() != "all":
+            query += " AND language = ?"
+            params.append(language.lower())
             
         if search:
             query += " AND (title LIKE ? OR summary LIKE ?)"
@@ -412,3 +422,9 @@ def is_article_posted(link_or_title):
         cursor.execute("SELECT COUNT(*) as count FROM post_history WHERE title = ?", (link_or_title,))
         row = cursor.fetchone()
         return (row["count"] > 0)
+
+# Auto-initialize database schema on module load
+try:
+    init_db()
+except Exception:
+    pass

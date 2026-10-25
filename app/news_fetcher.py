@@ -263,17 +263,21 @@ def fetch_feed(feed_url, category="trending", source_override=None, limit=25):
             })
 
         # Resolve real editorial images from web links concurrently
-        needs_scrape = [a for a in articles if not a["image_url"] and a.get("link")]
+        # NEVER scrape Google News redirect links (they hang/block with consent screens)
+        needs_scrape = [
+            a for a in articles 
+            if not a["image_url"] and a.get("link") and not a.get("link", "").startswith("https://news.google.com")
+        ]
         if needs_scrape:
             def resolve_article_image(art):
-                scraped = scrape_og_image_from_link(art["link"])
+                scraped = scrape_og_image_from_link(art["link"], timeout=1.5)
                 if scraped:
                     art["image_url"] = scraped
                 else:
                     art["image_url"] = get_fallback_backdrop(art["title"], art["summary"], art["category"])
                 return art
 
-            with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
                 list(executor.map(resolve_article_image, needs_scrape))
 
         # Ensure all articles have an image
@@ -285,58 +289,104 @@ def fetch_feed(feed_url, category="trending", source_override=None, limit=25):
         print(f"Error fetching feed {feed_url}: {e}")
     return articles
 
-def fetch_news_by_category(category="trending", city=None, query=None, language="english", limit=30):
+def fetch_news_by_category(category="trending", city=None, query=None, language="english", limit=35):
     """
-    Fetches categorized news:
-    - language: 'english' or 'urdu'
-    - local, pakistan, world, trending, or search query
+    Fetches categorized news from rich, live, fast RSS sources:
+    Categories:
+      - trending: Top viral & breaking headlines
+      - pakistan: National Pakistani news
+      - world: International world affairs
+      - tech: Technology, Gadgets, AI & Science
+      - war: Military, Defense, Strikes & Global Conflicts
+      - iran_us: Iran vs United States tensions & Middle East
+      - russia_ukraine: Russia-Ukraine War updates
+      - china_india: China-India border & regional geopolitics
+      - local: City-specific news
     """
     all_articles = []
     city = city or get_setting("local_city", "Lahore")
     city_lower = city.lower().strip()
     city_urdu = CITY_URDU_MAP.get(city_lower, city)
-    
+    cat_lower = (category or "trending").lower().strip()
+
     if query:
         encoded_q = urllib.parse.quote(query)
         lang_param = "ur" if language == "urdu" else "en"
         url = f"https://news.google.com/rss/search?q={encoded_q}&hl={lang_param}-PK&gl=PK&ceid=PK:{lang_param}"
         all_articles.extend(fetch_feed(url, category="search", limit=limit))
     elif language == "urdu":
-        # URDU NEWS FEEDS
-        if category == "local":
-            q = urllib.parse.quote(f"{city_urdu} خبریں")
-            url = f"https://news.google.com/rss/search?q={q}&hl=ur&gl=PK&ceid=PK:ur"
-            all_articles.extend(fetch_feed(url, category="local", limit=limit))
-        elif category == "pakistan":
-            all_articles.extend(fetch_feed("https://feeds.bbci.co.uk/urdu/rss.xml", category="pakistan", source_override="BBC Urdu", limit=15))
-            all_articles.extend(fetch_feed("https://www.express.pk/feed/", category="pakistan", source_override="Daily Express", limit=15))
-            all_articles.extend(fetch_feed("https://urdu.arynews.tv/feed/", category="pakistan", source_override="ARY News", limit=10))
-        elif category == "world":
-            all_articles.extend(fetch_feed("https://feeds.bbci.co.uk/urdu/world/rss.xml", category="world", source_override="BBC Urdu", limit=15))
-            all_articles.extend(fetch_feed("https://news.google.com/rss/headlines/section/topic/WORLD?hl=ur&gl=PK&ceid=PK:ur", category="world", limit=15))
-        else: # trending urdu
-            all_articles.extend(fetch_feed("https://www.express.pk/feed/", category="trending", source_override="Express News", limit=15))
-            all_articles.extend(fetch_feed("https://feeds.bbci.co.uk/urdu/rss.xml", category="trending", source_override="BBC Urdu", limit=15))
-            all_articles.extend(fetch_feed("https://news.google.com/rss?hl=ur&gl=PK&ceid=PK:ur", category="trending", limit=10))
+        # ────────────────────── URDU NEWS SOURCES ──────────────────────
+        if cat_lower == "pakistan":
+            all_articles.extend(fetch_feed("https://www.express.pk/feed/", category="pakistan", source_override="ایکسپریس نیوز", limit=25))
+            all_articles.extend(fetch_feed("https://feeds.bbci.co.uk/urdu/rss.xml", category="pakistan", source_override="بی بی سی اردو", limit=15))
+        elif cat_lower == "world":
+            all_articles.extend(fetch_feed("https://www.express.pk/world/feed/", category="world", source_override="ایکسپریس ورلڈ", limit=25))
+            all_articles.extend(fetch_feed("https://feeds.bbci.co.uk/urdu/world/rss.xml", category="world", source_override="بی بی سی اردو", limit=20))
+        elif cat_lower == "tech":
+            all_articles.extend(fetch_feed("https://www.express.pk/science/feed/", category="tech", source_override="ایکسپریس سائنس و ٹیک", limit=30))
+        elif cat_lower in ["war", "iran_us", "russia_ukraine", "china_india"]:
+            # Geopolitical & War feeds for Urdu: combine Express World and BBC Urdu World
+            raw_pool = []
+            raw_pool.extend(fetch_feed("https://www.express.pk/world/feed/", category=cat_lower, source_override="ایکسپریس ورلڈ", limit=30))
+            raw_pool.extend(fetch_feed("https://feeds.bbci.co.uk/urdu/world/rss.xml", category=cat_lower, source_override="بی بی سی اردو", limit=25))
+            raw_pool.extend(fetch_feed("https://www.express.pk/feed/", category=cat_lower, source_override="ایکسپریس نیوز", limit=20))
+
+            # Topic keyword filters
+            kw_map = {
+                "war": ["جنگ", "حملہ", "فوج", "میزائل", "دفاع", "دہشت گرد", "فائرنگ", "جھڑپ", "ہتھیار", "شہید", "آپریشن", "طیارہ", "سکیورٹی", "عسکری", "اسرائیل", "غزہ", "لبنان"],
+                "iran_us": ["ایران", "امریکہ", "ٹرمپ", "تہران", "واشنگٹن", "پابندیاں", "پاسداران", "خامنہ ای", "نیوکلیئر", "حملہ"],
+                "russia_ukraine": ["روس", "یوکرین", "پیوٹن", "زیلنسکی", "ماسکو", "کیف", "نیٹو", "کرسک"],
+                "china_india": ["چین", "بھارت", "مودی", "بیجنگ", "نئی دہلی", "لداخ", "سرحد", "تائیوان", "ہندوستان"]
+            }
+            kws = kw_map.get(cat_lower, [])
+            matched = [a for a in raw_pool if any(k in (a["title"] + " " + a["summary"]) for k in kws)]
+            all_articles.extend(matched)
+            # If keyword matching returned fewer than 5 items, supplement from general world pool
+            if len(all_articles) < 6:
+                for a in raw_pool:
+                    if a not in all_articles:
+                        all_articles.append(a)
+                        if len(all_articles) >= 15:
+                            break
+        elif cat_lower == "local":
+            all_articles.extend(fetch_feed("https://www.express.pk/feed/", category="local", source_override="ایکسپریس نیوز", limit=20))
+            all_articles.extend(fetch_feed("https://feeds.bbci.co.uk/urdu/rss.xml", category="local", source_override="بی بی سی اردو", limit=10))
+        else:  # trending
+            all_articles.extend(fetch_feed("https://www.express.pk/feed/", category="trending", source_override="ایکسپریس نیوز", limit=25))
+            all_articles.extend(fetch_feed("https://feeds.bbci.co.uk/urdu/rss.xml", category="trending", source_override="بی بی سی اردو", limit=15))
     else:
-        # ENGLISH NEWS FEEDS
-        if category == "local":
+        # ────────────────────── ENGLISH NEWS SOURCES ──────────────────────
+        if cat_lower == "pakistan":
+            all_articles.extend(fetch_feed("https://www.dawn.com/feeds/home/", category="pakistan", source_override="Dawn", limit=20))
+            all_articles.extend(fetch_feed("https://tribune.com.pk/feed/latest", category="pakistan", source_override="Express Tribune", limit=20))
+            all_articles.extend(fetch_feed("https://news.google.com/rss/headlines/section/topic/NATION?hl=en-PK&gl=PK&ceid=PK:en", category="pakistan", limit=15))
+        elif cat_lower == "world":
+            all_articles.extend(fetch_feed("http://feeds.bbci.co.uk/news/world/rss.xml", category="world", source_override="BBC News", limit=20))
+            all_articles.extend(fetch_feed("https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-PK&gl=PK&ceid=PK:en", category="world", limit=25))
+        elif cat_lower == "tech":
+            url_tech = "https://news.google.com/rss/search?q=technology+AI+smartphone+cybersecurity&hl=en-PK&gl=PK&ceid=PK:en"
+            all_articles.extend(fetch_feed(url_tech, category="tech", limit=25))
+            all_articles.extend(fetch_feed("https://tribune.com.pk/feed/technology", category="tech", source_override="Tribune Tech", limit=15))
+        elif cat_lower == "war":
+            url_war = "https://news.google.com/rss/search?q=war+military+airstrike+missile+defense+conflict&hl=en-PK&gl=PK&ceid=PK:en"
+            all_articles.extend(fetch_feed(url_war, category="war", limit=30))
+        elif cat_lower == "iran_us":
+            url_iran = "https://news.google.com/rss/search?q=Iran+US+military+strikes+Middle+East+tensions&hl=en-PK&gl=PK&ceid=PK:en"
+            all_articles.extend(fetch_feed(url_iran, category="iran_us", limit=30))
+        elif cat_lower == "russia_ukraine":
+            url_ru = "https://news.google.com/rss/search?q=Russia+Ukraine+war+Putin+Zelensky+frontline&hl=en-PK&gl=PK&ceid=PK:en"
+            all_articles.extend(fetch_feed(url_ru, category="russia_ukraine", limit=30))
+        elif cat_lower == "china_india":
+            url_ci = "https://news.google.com/rss/search?q=China+India+border+standoff+military+geopolitics&hl=en-PK&gl=PK&ceid=PK:en"
+            all_articles.extend(fetch_feed(url_ci, category="china_india", limit=30))
+        elif cat_lower == "local":
             city_query = f"{city} News Pakistan"
-            url = f"https://news.google.com/rss/search?q={urllib.parse.quote(city_query)}&hl=en-PK&gl=PK&ceid=PK:en"
-            all_articles.extend(fetch_feed(url, category="local", limit=limit))
-        elif category == "pakistan":
-            url1 = "https://news.google.com/rss/headlines/section/topic/NATION?hl=en-PK&gl=PK&ceid=PK:en"
-            all_articles.extend(fetch_feed(url1, category="pakistan", limit=15))
-            url2 = "https://www.dawn.com/feeds/home/"
-            all_articles.extend(fetch_feed(url2, category="pakistan", source_override="Dawn", limit=15))
-        elif category == "world":
-            url = "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-PK&gl=PK&ceid=PK:en"
-            all_articles.extend(fetch_feed(url, category="world", limit=limit))
-        else: # trending
-            url1 = "https://news.google.com/rss?hl=en-PK&gl=PK&ceid=PK:en"
-            all_articles.extend(fetch_feed(url1, category="trending", limit=20))
-            url2 = "https://tribune.com.pk/feed/latest"
-            all_articles.extend(fetch_feed(url2, category="trending", source_override="Express Tribune", limit=10))
+            url_local = f"https://news.google.com/rss/search?q={urllib.parse.quote(city_query)}&hl=en-PK&gl=PK&ceid=PK:en"
+            all_articles.extend(fetch_feed(url_local, category="local", limit=25))
+        else:  # trending
+            all_articles.extend(fetch_feed("https://tribune.com.pk/feed/latest", category="trending", source_override="Express Tribune", limit=25))
+            all_articles.extend(fetch_feed("https://www.dawn.com/feeds/home/", category="trending", source_override="Dawn", limit=15))
+            all_articles.extend(fetch_feed("https://news.google.com/rss?hl=en-PK&gl=PK&ceid=PK:en", category="trending", limit=20))
 
     # Deduplicate by title
     seen_titles = set()
