@@ -11,6 +11,7 @@ import os
 import io
 import re
 import math
+import base64
 import textwrap
 import subprocess
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageOps
@@ -58,6 +59,7 @@ def _shape(text):
 def _font(size=36, urdu=False):
     if urdu:
         for p in [
+            os.path.join(FONTS_DIR, "NotoNastaliqUrdu-Bold.ttf"),
             os.path.join(FONTS_DIR, "NotoSansArabic-Bold.ttf"),
             r"C:\Windows\Fonts\tahoma.ttf",
             r"C:\Windows\Fonts\arial.ttf",
@@ -74,6 +76,19 @@ def _font(size=36, urdu=False):
             try: return ImageFont.truetype(p, size)
             except: pass
     return ImageFont.load_default()
+
+def _decode_base64_image(data_str):
+    """Decodes a base64 Data URL into a PIL RGBA Image."""
+    if not data_str or not isinstance(data_str, str):
+        return None
+    try:
+        if "," in data_str:
+            data_str = data_str.split(",", 1)[1]
+        decoded = base64.b64decode(data_str)
+        return Image.open(io.BytesIO(decoded)).convert("RGBA")
+    except Exception as e:
+        print(f"[VideoGen] Error decoding base64 image: {e}")
+        return None
 
 def _fetch(url, timeout=8):
     if not url or not str(url).startswith("http"):
@@ -112,22 +127,46 @@ def _audio_duration(mp3_path):
         m = re.search(r"Duration:\s*(\d+):(\d+):(\d+\.?\d*)", proc.stderr)
         if m:
             h, mn, s = int(m.group(1)), int(m.group(2)), float(m.group(3))
-            return max(5.0, h * 3600 + mn * 60 + s + 1.5)
+            return max(5.0, h * 3600 + mn * 60 + s + 1.2)
     except Exception:
         pass
     return 7.0
+
+def _generate_news_audio_bed(duration: float, out_mp3_path: str):
+    """
+    Synthesizes a broadcast newsroom ambient background music bed using FFmpeg.
+    Creates a deep 65Hz/120Hz pulsing bass + high rhythm ticker pulse, giving that urgent TV newsroom feel.
+    """
+    try:
+        cmd = [
+            _FFMPEG, "-y",
+            "-f", "lavfi", "-i", f"anoisesrc=d={duration + 1}:c=pink:r=44100:a=0.015",
+            "-f", "lavfi", "-i", f"sine=f=120:d={duration + 1}",
+            "-filter_complex",
+            "[1:a]volume=0.20,lowpass=f=240,tremolo=f=4:d=0.75[bass];[0:a][bass]amix=inputs=2:duration=first[out]",
+            "-map", "[out]",
+            "-c:a", "libmp3lame",
+            "-b:a", "128k",
+            out_mp3_path
+        ]
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
+        return os.path.exists(out_mp3_path)
+    except Exception as e:
+        print(f"[VideoGen] Audio bed synthesis warning: {e}")
+        return False
 
 # ── Core Generator ───────────────────────────────────────────────────────────
 
 def generate_news_video(article: dict, options: dict = None) -> dict:
     """
     Generate an advanced broadcast-quality news MP4 clip.
-    Supports:
+    Features:
       • 3 Ratios: 9:16 (TikTok/Reels), 1:1 (Square Feed), 16:9 (YouTube/Landscape)
-      • Multi-image slideshow with Ken-Burns, crossfade, or slide transitions
-      • Multilingual TTS voiceover (Urdu, English US/UK) with speed and mute options
-      • Studio-matching adaptive brand pills (no text crossing, perfectly sized)
-      • Animated lower-third headline plate with pulsing LIVE indicator
+      • Dynamic multi-camera scene cuts changing every 2.5 seconds
+      • 100% Studio-accurate text & graphics directly from the Studio Canvas
+      • Multi-image slideshow support with smooth camera movements
+      • Background newsroom music bed mixed with realistic voiceover
+      • Adaptive brand pill ("Zulqarnain Combat Updates" fits perfectly)
     """
     if options is None:
         options = {}
@@ -135,10 +174,13 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
     aspect_ratio = options.get("aspect_ratio", "9:16")
     if aspect_ratio == "1:1":
         width, height = 1080, 1080
+        split_y = int(height * 0.52)
     elif aspect_ratio == "16:9":
         width, height = 1920, 1080
+        split_y = int(height * 0.58)
     else:  # default 9:16
         width, height = 1080, 1920
+        split_y = int(height * 0.52)
 
     title       = article.get("title", "Breaking News") or "Breaking News"
     summary     = article.get("summary", "") or ""
@@ -162,33 +204,66 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
     slow_speed  = (options.get("voice_speed") == "slow")
     narr_text   = options.get("narrative_text") or (title if is_urdu else f"{title}. {summary}"[:400])
 
-    art_id    = article.get("id") or datetime.now().strftime("%Y%m%d%H%M%S")
-    ts        = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_name  = f"video_{art_id}_{aspect_ratio.replace(':', 'x')}_{ts}.mp4"
-    out_path  = os.path.join(OUTPUT_DIR, out_name)
-    tmp_vid   = os.path.join(OUTPUT_DIR, f"_tmp_v_{art_id}.mp4")
-    tmp_audio = os.path.join(OUTPUT_DIR, f"_tmp_a_{art_id}.mp3")
+    art_id      = article.get("id") or datetime.now().strftime("%Y%m%d%H%M%S")
+    ts          = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_name    = f"video_{art_id}_{aspect_ratio.replace(':', 'x')}_{ts}.mp4"
+    out_path    = os.path.join(OUTPUT_DIR, out_name)
+    tmp_vid     = os.path.join(OUTPUT_DIR, f"_tmp_v_{art_id}.mp4")
+    tmp_audio   = os.path.join(OUTPUT_DIR, f"_tmp_a_{art_id}.mp3")
+    tmp_bg_audio = os.path.join(OUTPUT_DIR, f"_tmp_bg_{art_id}.mp3")
 
-    # ── 1. TTS Voiceover ────────────────────────────────────────────────────
+    # ── 1. Voiceover (TTS) ──────────────────────────────────────────────────
     duration   = 8.0
     has_audio  = False
 
     if not mute_audio and _HAS_GTTS:
         try:
-            # Generate speech
             clean_tts_lang = "ur" if "ur" in tts_lang else "en"
             tts = gTTS(text=narr_text, lang=clean_tts_lang, slow=slow_speed)
             tts.save(tmp_audio)
             has_audio = True
             duration  = _audio_duration(tmp_audio)
-            duration  = max(6.0, min(24.0, duration))
+            duration  = max(6.0, min(30.0, duration))
         except Exception as e:
             print(f"[VideoGen] TTS warning: {e}")
 
     fps          = 25
     total_frames = int(duration * fps)
 
-    # ── 2. Prepare Images (Single or Multi-image Slideshow) ─────────────────
+    # ── 2. Background Newsroom Audio Bed ────────────────────────────────────
+    has_bg_audio = _generate_news_audio_bed(duration, tmp_bg_audio)
+
+    # ── 3. Prepare Visual Assets (Studio Card & Photo Viewport) ─────────────
+    card_data = options.get("card_image_data")
+    master_card = _decode_base64_image(card_data)
+
+    # If no canvas card provided, generate one from image_generator
+    if not master_card:
+        try:
+            from app.image_generator import generate_news_card
+            card_res = generate_news_card(article, {
+                "theme": "turkiye_urdu_split",
+                "aspect_ratio": "1:1" if aspect_ratio == "1:1" else ("16:9" if aspect_ratio == "16:9" else "9:16"),
+                "page_name": page_name,
+                "page_handle": page_handle,
+                "custom_image_url": options.get("custom_image_url")
+            })
+            if card_res and os.path.exists(card_res.get("file_path", "")):
+                master_card = Image.open(card_res["file_path"]).convert("RGBA")
+        except Exception as e:
+            print(f"[VideoGen] Fallback master card error: {e}")
+
+    if master_card:
+        master_card = master_card.resize((width, height), Image.Resampling.LANCZOS)
+
+    # Extract lower-third graphic strap and header from master card
+    lower_third_overlay = None
+    header_overlay = None
+    if master_card:
+        lower_third_overlay = master_card.crop((0, split_y, width, height))
+        header_overlay = master_card.crop((0, 0, width, int(split_y * 0.22)))
+
+    # Load news photos for the dynamic video viewport
     raw_img_urls = options.get("image_urls") or []
     single_img_url = options.get("custom_image_url") or article.get("image_url", "")
     if not raw_img_urls and single_img_url:
@@ -200,29 +275,16 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
         if fetched:
             loaded_images.append(fetched)
 
-    if not loaded_images:
-        loaded_images = [Image.new("RGB", (width, height), (15, 18, 25))]
+    if not loaded_images and master_card:
+        # Extract top photo from master card as base image
+        loaded_images = [master_card.crop((0, 0, width, split_y)).convert("RGB")]
+    elif not loaded_images:
+        loaded_images = [Image.new("RGB", (width, split_y), (15, 18, 25))]
 
     num_images = len(loaded_images)
-    transition_style = options.get("transition", "ken_burns")
+    scene_interval = float(options.get("scene_interval", 2.5))  # Cut every 2.5 seconds!
 
-    banner_color = (165, 0, 10)
-    accent_color = (255, 215, 0)
-    header_h     = 85 if height == 1080 and width == 1920 else 96
-
-    tag_text = "🔴 بریکنگ نیوز" if is_urdu else "⚡ BREAKING NEWS"
-
-    font_brand    = _font(28 if is_urdu else 26, urdu=_is_urdu(page_name))
-    font_headline = _font(46 if is_urdu else 42, urdu=is_urdu)
-    font_tag      = _font(24, urdu=is_urdu)
-    font_meta     = _font(20)
-    font_footer   = _font(22)
-
-    wrap_w = 45 if width == 1920 else (32 if is_urdu else 24)
-    headline_lines = [_shape(l) for l in _wrap(title, wrap_w)][:4]
-    shaped_page    = _shape(page_name)
-
-    # ── 3. Render Frames → rawvideo pipe to temp MP4 ─────────────────────────
+    # ── 4. Render Frames → rawvideo pipe to temp MP4 ─────────────────────────
     cmd_vid = [
         _FFMPEG, "-y",
         "-f", "rawvideo", "-vcodec", "rawvideo",
@@ -242,146 +304,100 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
     )
 
     for f in range(total_frames):
-        frame = Image.new("RGBA", (width, height), (10, 12, 18, 255))
+        cur_sec = f / fps
         t = f / max(total_frames - 1, 1)
 
-        # Multi-Image Slideshow logic
-        if num_images == 1:
-            curr_img = loaded_images[0]
-            # Single image Ken Burns zoom: 1.00 → 1.14
-            zoom = 1.0 + t * 0.14
-            zw, zh = int(width * zoom), int(height * zoom)
-            bg_r = curr_img.resize((zw, zh), Image.Resampling.BILINEAR)
-            cx   = (zw - width) // 2
-            cy   = (zh - height) // 2
-            bg_c = bg_r.crop((cx, cy, cx + width, cy + height)).convert("RGBA")
-            frame.paste(bg_c, (0, 0))
+        # ── Scene Switcher: Changes scene every 2.5 seconds ─────────────────
+        scene_idx = int(cur_sec / scene_interval)
+        t_scene   = (cur_sec % scene_interval) / scene_interval  # 0.0 to 1.0 within scene
+
+        # Select image for this scene
+        img_idx = (scene_idx) % num_images
+        curr_img = loaded_images[img_idx]
+
+        # Dynamic Camera Movement for this scene
+        # Scene 0: Smooth push-in zoom
+        # Scene 1: Subject crop with slow pan right
+        # Scene 2: Wide cinematic view with slow zoom out
+        # Scene 3: Dramatic push-in from top angle
+        motion_style = scene_idx % 4
+
+        viewport_w = width
+        viewport_h = split_y
+
+        if motion_style == 0:
+            zoom = 1.00 + t_scene * 0.12
+            zw, zh = int(viewport_w * zoom), int(viewport_h * zoom)
+            bg_r = ImageOps.fit(curr_img, (zw, zh), centering=(0.5, 0.4))
+            cx = (zw - viewport_w) // 2
+            cy = (zh - viewport_h) // 2
+            scene_frame = bg_r.crop((cx, cy, cx + viewport_w, cy + viewport_h)).convert("RGBA")
+        elif motion_style == 1:
+            zoom = 1.15
+            zw, zh = int(viewport_w * zoom), int(viewport_h * zoom)
+            bg_r = ImageOps.fit(curr_img, (zw, zh), centering=(0.5, 0.35))
+            pan_x = int((t_scene - 0.5) * (zw - viewport_w) * 0.6)
+            cx = max(0, min(zw - viewport_w, ((zw - viewport_w) // 2) + pan_x))
+            cy = (zh - viewport_h) // 2
+            scene_frame = bg_r.crop((cx, cy, cx + viewport_w, cy + viewport_h)).convert("RGBA")
+        elif motion_style == 2:
+            zoom = 1.14 - t_scene * 0.10
+            zw, zh = int(viewport_w * zoom), int(viewport_h * zoom)
+            bg_r = ImageOps.fit(curr_img, (zw, zh), centering=(0.5, 0.45))
+            cx = (zw - viewport_w) // 2
+            cy = (zh - viewport_h) // 2
+            scene_frame = bg_r.crop((cx, cy, cx + viewport_w, cy + viewport_h)).convert("RGBA")
         else:
-            # Multi-image slideshow with crossfade
-            slide_duration = 1.0 / num_images
-            img_idx = int(t / slide_duration)
-            img_idx = min(img_idx, num_images - 1)
-            next_idx = min(img_idx + 1, num_images - 1)
+            zoom = 1.02 + t_scene * 0.14
+            zw, zh = int(viewport_w * zoom), int(viewport_h * zoom)
+            bg_r = ImageOps.fit(curr_img, (zw, zh), centering=(0.5, 0.25))
+            cx = (zw - viewport_w) // 2
+            cy = (zh - viewport_h) // 2
+            scene_frame = bg_r.crop((cx, cy, cx + viewport_w, cy + viewport_h)).convert("RGBA")
 
-            t_slide = (t - (img_idx * slide_duration)) / slide_duration
-            curr_img = loaded_images[img_idx]
+        # Smooth cut transition between scenes
+        if t_scene < 0.15 and scene_idx > 0:
+            # Subtle flash / blend on scene change
+            blend_a = int((1.0 - (t_scene / 0.15)) * 60)
+            flash = Image.new("RGBA", (viewport_w, viewport_h), (255, 255, 255, blend_a))
+            scene_frame = Image.alpha_composite(scene_frame, flash)
 
-            # Fit and Ken Burns
-            zoom = 1.0 + t_slide * 0.10
-            zw, zh = int(width * zoom), int(height * zoom)
-            bg_r = curr_img.resize((zw, zh), Image.Resampling.BILINEAR)
-            cx   = (zw - width) // 2
-            cy   = (zh - height) // 2
-            curr_crop = bg_r.crop((cx, cy, cx + width, cy + height)).convert("RGBA")
+        # ── Base Canvas Assembly ────────────────────────────────────────────
+        frame = Image.new("RGBA", (width, height), (10, 12, 18, 255))
+        frame.paste(scene_frame, (0, 0))
 
-            if t_slide > 0.75 and img_idx != next_idx and transition_style == "crossfade":
-                # Crossfade during last 25% of slide
-                alpha = int(((t_slide - 0.75) / 0.25) * 255)
-                next_img = loaded_images[next_idx]
-                next_r = next_img.resize((width, height), Image.Resampling.BILINEAR).convert("RGBA")
-                curr_crop = Image.blend(curr_crop, next_r, alpha / 255.0)
+        # Viewport bottom vignette shadow seam
+        v_shadow = Image.new("RGBA", (width, 24), (0, 0, 0, 0))
+        vs_draw  = ImageDraw.Draw(v_shadow)
+        for i in range(24):
+            vs_draw.line([(0, i), (width, i)], fill=(0, 0, 0, int(220 * (i / 24))))
+        frame.paste(v_shadow, (0, split_y - 24), mask=v_shadow)
 
-            frame.paste(curr_crop, (0, 0))
+        # ── Paste Studio-Accurate Lower Third Strap (100% Perfect Text) ────
+        if lower_third_overlay:
+            frame.paste(lower_third_overlay, (0, split_y))
+        else:
+            # Fallback lower-third if no master card
+            fb_draw = ImageDraw.Draw(frame)
+            fb_draw.rectangle([(0, split_y), (width, height)], fill=(165, 0, 10))
 
-        # Dynamic Vignette / Gradient overlays
-        ov = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-        od = ImageDraw.Draw(ov)
-        # Top dark strip
-        for row in range(140):
-            a = int(220 * (1 - row / 140))
-            od.line([(0, row), (width, row)], fill=(0, 0, 0, a))
-        # Bottom heavy gradient for readable news text
-        b0 = int(height * (0.38 if height == 1920 else 0.45))
-        for row in range(b0, height):
-            pct = (row - b0) / (height - b0)
-            a   = int(255 * min(1.0, pct ** 1.15))
-            od.line([(0, row), (width, row)], fill=(6, 8, 14, a))
-        frame = Image.alpha_composite(frame, ov)
-        d = ImageDraw.Draw(frame)
-
-        # ── Adaptive Brand Pill (Top-Left) ──────────────────────────────────
-        # Fits ANY page name length (e.g. "Zulqarnain Combat Updates") with dynamic padding
-        tb_brand = font_brand.getbbox(shaped_page)
-        brand_w  = max(tb_brand[2] - tb_brand[0] + 36, 160)
-        brand_h  = 52
-        pill_x   = 26
-        pill_y   = 22
-        # Pill drop shadow
-        d.rounded_rectangle([(pill_x + 2, pill_y + 2), (pill_x + brand_w + 2, pill_y + brand_h + 2)], radius=8, fill=(0, 0, 0, 180))
-        # Main pill
-        d.rounded_rectangle([(pill_x, pill_y), (pill_x + brand_w, pill_y + brand_h)], radius=8, fill=banner_color, outline=(255, 255, 255), width=2)
-        # Pill text
-        tx = pill_x + (brand_w - (tb_brand[2] - tb_brand[0])) // 2
-        ty = pill_y + (brand_h - (tb_brand[3] - tb_brand[1])) // 2 - 2
-        d.text((tx, ty), shaped_page, font=font_brand, fill=(255, 255, 255))
+        # ── Paste Studio Header Bar & Brand Pill ────────────────────────────
+        if header_overlay:
+            frame.paste(header_overlay, (0, 0), mask=header_overlay)
 
         # ── Pulsing LIVE Badge (Top-Right) ──────────────────────────────────
-        pulse = 0.55 + 0.45 * math.sin(f * 0.35)
+        d = ImageDraw.Draw(frame)
+        pulse = 0.55 + 0.45 * math.sin(f * 0.4)
         live_r = int(200 + 55 * pulse)
-        live_w, live_h = 105, 46
-        live_x = width - live_w - 26
+        live_w, live_h = 100, 44
+        live_x = width - live_w - 25
         live_y = 25
         d.rounded_rectangle([(live_x, live_y), (live_x + live_w, live_y + live_h)], radius=6, fill=(live_r, 0, 0), outline=(255, 255, 255), width=2)
-        d.text((live_x + 18, live_y + 11), "🔴 LIVE", font=font_meta, fill=(255, 255, 255))
+        font_live = _font(20)
+        d.text((live_x + 18, live_y + 11), "🔴 LIVE", font=font_live, fill=(255, 255, 255))
 
-        # ── Category Tag Badge ──────────────────────────────────────────────
-        tag_y = pill_y + brand_h + 16
-        tag_sh = _shape(tag_text)
-        tb_tag = font_tag.getbbox(tag_sh)
-        tag_w  = tb_tag[2] - tb_tag[0] + 32
-        tag_h  = max(40, tb_tag[3] - tb_tag[1] + 14)
-        tag_x  = width - tag_w - 26 if is_urdu else 26
-        d.rounded_rectangle([(tag_x, tag_y), (tag_x + tag_w, tag_y + tag_h)], radius=6, fill=(20, 24, 34, 230), outline=accent_color, width=2)
-        d.text((tag_x + 16, tag_y + 6), tag_sh, font=font_tag, fill=accent_color)
-
-        # ── Lower-Third Animated Glass Card ─────────────────────────────────
-        box_h  = 340 if height == 1920 else 240
-        box_y0 = height - box_h - (90 if height == 1920 else 75)
-        slide  = max(0, int((20 - f) * 8)) if f < 20 else 0
-
-        bov = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-        bd  = ImageDraw.Draw(bov)
-        bd.rounded_rectangle(
-            [(24, box_y0 + slide), (width - 24, box_y0 + box_h + slide)],
-            radius=12, fill=(10, 14, 22, 235), outline=accent_color, width=2
-        )
-        frame = Image.alpha_composite(frame, bov)
-        d = ImageDraw.Draw(frame)
-
-        cur_y = box_y0 + 24 + slide
-        step  = 64 if height == 1920 else 48
-
-        if is_urdu:
-            bar_x = width - 46
-            d.rectangle([(bar_x, cur_y), (bar_x + 6, cur_y + len(headline_lines) * step)], fill=accent_color)
-            for line in headline_lines:
-                lb  = font_headline.getbbox(line)
-                lw2 = lb[2] - lb[0]
-                lx  = bar_x - 20 - lw2
-                # High-contrast drop shadow
-                d.text((lx + 2, cur_y + 2), line, font=font_headline, fill=(0, 0, 0))
-                d.text((lx, cur_y),          line, font=font_headline, fill=accent_color)
-                cur_y += step
-        else:
-            d.rectangle([(40, cur_y), (46, cur_y + len(headline_lines) * step)], fill=accent_color)
-            for line in headline_lines:
-                d.text((58 + 2, cur_y + 2), line, font=font_headline, fill=(0, 0, 0))
-                d.text((58, cur_y),          line, font=font_headline, fill=(255, 255, 255))
-                cur_y += step
-
-        # ── Footer Bar ──────────────────────────────────────────────────────
-        foot_h = 60
-        foot_y = height - foot_h
-        d.rectangle([(0, foot_y), (width, height)], fill=(12, 14, 20))
-        d.rectangle([(0, foot_y), (width, foot_y + 3)], fill=accent_color)
-
-        src_lbl = f"SOURCE: {source.upper()}"
-        d.text((26, foot_y + 18), src_lbl, font=font_footer, fill=(200, 210, 225))
-
-        handle_sh = _shape(page_handle)
-        hb = font_footer.getbbox(handle_sh)
-        hx = width - (hb[2] - hb[0]) - 26
-        d.text((hx, foot_y + 18), handle_sh, font=font_footer, fill=accent_color)
+        # ── Razor Accent Line Along Split ───────────────────────────────────
+        d.rectangle([(0, split_y - 2), (width, split_y + 1)], fill=(255, 215, 0))
 
         # Write raw RGB bytes to ffmpeg
         try:
@@ -395,14 +411,50 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
     except Exception as e:
         print(f"[VideoGen] FFmpeg frame pipe error: {e}")
 
-    # ── 4. Merge Audio ──────────────────────────────────────────────────────
-    if has_audio and os.path.exists(tmp_audio) and os.path.exists(tmp_vid):
+    # ── 5. Audio Mixing: Voiceover + Background Newsroom Music ───────────────
+    if has_audio and os.path.exists(tmp_audio) and has_bg_audio and os.path.exists(tmp_bg_audio):
+        # Mix voiceover at 100% volume with background news bed at 20% volume
+        # tmp_bg_audio is generated for the full duration, so amix duration=longest plays bg until video ends
+        merge_cmd = [
+            _FFMPEG, "-y",
+            "-i", tmp_vid,
+            "-i", tmp_audio,
+            "-i", tmp_bg_audio,
+            "-filter_complex",
+            "[1:a]volume=1.0[voice];[2:a]volume=0.20[bg];[voice][bg]amix=inputs=2:duration=longest:dropout_transition=2[aout]",
+            "-map", "0:v",
+            "-map", "[aout]",
+            "-c:v", "copy",
+            "-c:a", "aac",
+            "-b:a", "128k",
+            "-shortest",
+            out_path
+        ]
+        subprocess.run(merge_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    elif has_audio and os.path.exists(tmp_audio):
         merge_cmd = [
             _FFMPEG, "-y",
             "-i", tmp_vid,
             "-i", tmp_audio,
             "-c:v", "copy",
-            "-c:a", "aac", "-b:a", "128k",
+            "-c:a", "aac",
+            "-b:a", "128k",
+            "-shortest",
+            out_path
+        ]
+        subprocess.run(merge_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    elif has_bg_audio and os.path.exists(tmp_bg_audio):
+        # Mute voiceover, play broadcast music bed at 60%
+        merge_cmd = [
+            _FFMPEG, "-y",
+            "-i", tmp_vid,
+            "-i", tmp_bg_audio,
+            "-filter_complex", "[1:a]volume=0.60[aout]",
+            "-map", "0:v",
+            "-map", "[aout]",
+            "-c:v", "copy",
+            "-c:a", "aac",
+            "-b:a", "128k",
             "-shortest",
             out_path
         ]
@@ -411,8 +463,8 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
         import shutil
         shutil.move(tmp_vid, out_path)
 
-    # ── 5. Cleanup ──────────────────────────────────────────────────────────
-    for f_rm in [tmp_vid, tmp_audio]:
+    # ── 6. Cleanup Temp Files ───────────────────────────────────────────────
+    for f_rm in [tmp_vid, tmp_audio, tmp_bg_audio]:
         try:
             if os.path.exists(f_rm):
                 os.remove(f_rm)

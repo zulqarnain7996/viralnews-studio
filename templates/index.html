@@ -1376,12 +1376,18 @@
     const narrative_text = document.getElementById('videoOptScript')?.value || article.title;
     const mute_audio = (voice_pref === 'mute');
 
+    let cardImageData = null;
+    if (typeof canvas !== 'undefined' && canvas) {
+      cardImageData = canvas.toDataURL('image/png', 0.98);
+    }
+
     const body = {
       article: article,
       page_name: pageName,
       page_handle: pageHandle,
       custom_image_url: rawImages[0] || customImg,
       image_urls: rawImages,
+      card_image_data: cardImageData,
       aspect_ratio: aspect_ratio,
       voice_lang: voice_pref,
       transition: transition,

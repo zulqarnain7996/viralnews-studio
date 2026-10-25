@@ -228,12 +228,14 @@ class VideoGenerateRequest(BaseModel):
     page_handle:      Optional[str] = None
     custom_image_url: Optional[str] = None
     image_urls:       Optional[List[str]] = None
+    card_image_data:  Optional[str] = None
     aspect_ratio:     Optional[str] = "9:16"
     voice_lang:       Optional[str] = "auto"
     voice_speed:      Optional[str] = "normal"
     transition:       Optional[str] = "ken_burns"
     narrative_text:   Optional[str] = None
     mute_audio:       Optional[bool] = False
+    scene_interval:   Optional[float] = 2.5
 
 @router.post("/generate-video")
 def generate_video(req: VideoGenerateRequest):
@@ -251,12 +253,14 @@ def generate_video(req: VideoGenerateRequest):
         "page_handle":      req.page_handle or settings.get("page_handle", "@PakNewsOfficial"),
         "custom_image_url": req.custom_image_url,
         "image_urls":       req.image_urls or ([req.custom_image_url] if req.custom_image_url else []),
+        "card_image_data":  req.card_image_data,
         "aspect_ratio":     req.aspect_ratio or "9:16",
         "voice_lang":       req.voice_lang or "auto",
         "voice_speed":      req.voice_speed or "normal",
         "transition":       req.transition or "ken_burns",
         "narrative_text":   req.narrative_text,
-        "mute_audio":       bool(req.mute_audio)
+        "mute_audio":       bool(req.mute_audio),
+        "scene_interval":   req.scene_interval or 2.5
     }
 
     try:
