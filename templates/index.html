@@ -889,10 +889,54 @@
                   </div>
                 </div>
 
-                <div class="d-grid gap-2 pt-2">
+                <div class="d-grid gap-2 pt-2 mb-3">
                   <button class="btn btn-primary fw-bold py-2" onclick="saveAllAppSettings()">
                     <i class="fa-solid fa-floppy-disk me-1"></i> Save All Settings
                   </button>
+                </div>
+
+                <!-- 24/7 Server Keep-Alive & Ping URL Card -->
+                <div class="card bg-dark border-secondary p-3 mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-white fs-6"><i class="fa-solid fa-bolt text-warning me-1"></i> 24/7 Server Keep-Alive (Never Sleep)</span>
+                    <span class="badge bg-success" id="keepAliveBadge">ACTIVE (8m PING)</span>
+                  </div>
+                  <p class="small text-white-50 mb-2">
+                    Render free instances sleep after 15 minutes of inactivity. Our built-in background worker pings your public URL every 8 minutes to prevent sleep.
+                  </p>
+                  <label class="form-label small text-white fw-bold mb-1">YOUR PUBLIC APP / PING URL</label>
+                  <div class="input-group input-group-sm mb-2">
+                    <input type="text" id="settingAppPublicUrl" class="form-control bg-black border-secondary text-white font-monospace" value="https://viralnews-studio.onrender.com">
+                    <button class="btn btn-outline-warning text-white fw-bold" onclick="copyKeepAliveUrl()"><i class="fa-solid fa-copy me-1"></i> Copy Ping Link</button>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-xs btn-outline-info text-white flex-grow-1 py-1" onclick="testKeepAlivePing()">
+                      <i class="fa-solid fa-heart-pulse me-1"></i> Test Health Ping Now
+                    </button>
+                    <a href="https://cron-job.org" target="_blank" class="btn btn-xs btn-outline-secondary text-white py-1">
+                      <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> External Ping (Cron-Job.org)
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Token Vault & Cloud Persistence Card -->
+                <div class="card bg-dark border-secondary p-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-white fs-6"><i class="fa-solid fa-vault text-info me-1"></i> Token Vault & Cloud Auto-Backup</span>
+                    <span class="badge bg-info text-dark">ZERO-DATA-LOSS</span>
+                  </div>
+                  <p class="small text-white-50 mb-2">
+                    Your Page ID, Access Tokens, and channel handles are backed up in browser storage and the backend vault file. They survive container reboots and redeployments!
+                  </p>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-success text-white flex-grow-1" onclick="exportSettingsBackup()">
+                      <i class="fa-solid fa-download me-1"></i> Backup Settings JSON
+                    </button>
+                    <label class="btn btn-sm btn-outline-warning text-white flex-grow-1 mb-0 cursor-pointer">
+                      <i class="fa-solid fa-upload me-1"></i> Restore Settings
+                      <input type="file" id="restoreSettingsFileInput" accept=".json" class="d-none" onchange="importSettingsRestore(this)">
+                    </label>
+                  </div>
                 </div>
 
               </div>
@@ -1050,12 +1094,12 @@
     </div>
   </div>
 
-  <!-- Video Generation Modal -->
+  <!-- Advanced News Video Studio Modal -->
   <div class="modal fade" id="videoGenModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content bg-dark text-white border-secondary">
         <div class="modal-header bg-danger text-white border-secondary">
-          <h5 class="modal-title"><i class="fa-solid fa-video me-2"></i>Short Video Generator (9:16 TikTok / Reels / Shorts)</h5>
+          <h5 class="modal-title fw-bold"><i class="fa-solid fa-video me-2"></i>News Video Studio Pro (Multi-Ratio & Voiceover)</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body p-4">
@@ -1065,32 +1109,83 @@
           <div id="videoArticlePreview" class="p-3 mb-3 bg-black rounded border border-secondary">
             <span class="badge bg-danger mb-2">TARGET HEADLINE</span>
             <h6 id="videoModalTitle" class="fw-bold text-white mb-2" style="line-height:1.5;"></h6>
-            <div class="small text-light">
-              <span id="videoModalSource" class="badge bg-secondary me-2"></span>
+            <div class="small text-light d-flex gap-2">
+              <span id="videoModalSource" class="badge bg-secondary"></span>
               <span id="videoModalLang" class="badge bg-info text-dark"></span>
+            </div>
+          </div>
+
+          <!-- Video Production Controls Form -->
+          <div id="videoOptionsForm" class="mb-3">
+            <div class="row g-2 mb-3">
+              <div class="col-6 col-md-4">
+                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-crop-simple me-1 text-warning"></i> ASPECT RATIO</label>
+                <select id="videoOptRatio" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
+                  <option value="9:16" selected>📱 9:16 Vertical (TikTok/Reels/Shorts)</option>
+                  <option value="1:1">🔲 1:1 Square (FB/Insta Feed)</option>
+                  <option value="16:9">📺 16:9 Landscape (YouTube/TV)</option>
+                </select>
+              </div>
+              <div class="col-6 col-md-4">
+                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-microphone me-1 text-info"></i> VOICEOVER (TTS)</label>
+                <select id="videoOptVoice" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
+                  <option value="auto" selected>🎙️ Auto-Detect (Urdu / English)</option>
+                  <option value="ur">🇵🇰 Urdu Natural Voice</option>
+                  <option value="en">🇺🇸 English (US Accent)</option>
+                  <option value="en-uk">🇬🇧 English (UK Accent)</option>
+                  <option value="mute">🔇 Mute / Silent Video</option>
+                </select>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-film me-1 text-danger"></i> TRANSITION EFFECT</label>
+                <select id="videoOptTransition" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
+                  <option value="ken_burns" selected>🎬 Ken Burns (Cinematic Zoom)</option>
+                  <option value="crossfade">✨ Smooth Crossfade (Multi-Image)</option>
+                  <option value="zoom_slide">⚡ Zoom & Sweep</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Multi-Image URLs for Slideshow -->
+            <div class="mb-3">
+              <label class="form-label small text-white fw-bold d-flex justify-content-between mb-1">
+                <span><i class="fa-solid fa-images me-1 text-success"></i> SLIDESHOW IMAGES (Single or Multiple)</span>
+                <span class="small text-white-50">Separate multiple URLs with commas</span>
+              </label>
+              <textarea id="videoOptImages" class="form-control form-control-sm bg-dark border-secondary text-white font-monospace" rows="2" placeholder="https://example.com/photo1.jpg, https://example.com/photo2.jpg"></textarea>
+            </div>
+
+            <!-- Custom Voiceover Narrative Script -->
+            <div class="mb-3">
+              <label class="form-label small text-white fw-bold d-flex justify-content-between mb-1">
+                <span><i class="fa-solid fa-bullhorn me-1 text-primary"></i> VOICEOVER SCRIPT (Read aloud in video)</span>
+                <span class="small text-white-50">Customizable speech text</span>
+              </label>
+              <textarea id="videoOptScript" class="form-control form-control-sm bg-dark border-secondary text-white" rows="3" dir="auto" placeholder="Edit the narration speech text here..."></textarea>
             </div>
           </div>
 
           <!-- Live Progress Spinner -->
           <div id="videoGenSpinner" class="text-center d-none py-4">
             <div class="spinner-border text-danger" style="width:3.5rem;height:3.5rem;"></div>
-            <h5 class="mt-3 text-white fw-bold">Creating 9:16 Video with Voiceover...</h5>
-            <p class="text-light small">Synthesizing TTS narration, animating Ken Burns zoom & rendering MP4 frames</p>
+            <h5 class="mt-3 text-white fw-bold">Creating News Broadcast Video...</h5>
+            <p class="text-light small">Synthesizing TTS voiceover, animating Ken Burns / transitions & encoding MP4</p>
             <div class="badge bg-warning text-dark px-3 py-2 fs-6" id="videoTimerBadge">Elapsed: 0s</div>
           </div>
 
           <!-- Generated Video Player -->
           <div id="videoResult" class="d-none text-center">
-            <div class="alert alert-success py-2">
-              <i class="fa-solid fa-circle-check me-1"></i> Video successfully generated! Watch preview below:
+            <div class="alert alert-success py-2 mb-3">
+              <i class="fa-solid fa-circle-check me-1"></i> Broadcast video created! Preview below:
             </div>
-            <video id="generatedVideoPlayer" controls playsinline style="max-width:320px;max-height:540px;border:3px solid #dc3545;border-radius:12px;background:#000;box-shadow:0 8px 24px rgba(0,0,0,0.8);"></video>
+            <video id="generatedVideoPlayer" controls playsinline style="max-width:340px;max-height:500px;border:3px solid #dc3545;border-radius:12px;background:#000;box-shadow:0 8px 24px rgba(0,0,0,0.8);"></video>
+            
             <div class="mt-3 d-flex gap-2 justify-content-center flex-wrap">
               <a id="videoDownloadBtn" href="#" download class="btn btn-success fw-bold">
                 <i class="fa-solid fa-download me-1"></i> Download MP4
               </a>
               <button class="btn btn-primary fw-bold" onclick="postVideoToFB()">
-                <i class="fa-brands fa-facebook me-1"></i> Post to FB Page
+                <i class="fa-brands fa-facebook me-1"></i> Post Video to FB
               </button>
               <button class="btn btn-outline-info text-white fw-bold" onclick="postVideoToTelegram()">
                 <i class="fa-brands fa-telegram me-1"></i> Send to Telegram
@@ -1220,16 +1315,27 @@
 
     window.studioArticle = article;
 
-    // Populate modal preview
+    // Populate modal preview & options
     document.getElementById('videoModalTitle').innerText = article.title;
     document.getElementById('videoModalSource').innerText = article.source || 'News Desk';
     const isUrdu = (article.language === 'urdu' || /[\u0600-\u06FF]/.test(article.title));
     document.getElementById('videoModalLang').innerText = isUrdu ? 'Urdu Voiceover (TTS)' : 'English Voiceover';
 
+    const scriptInput = document.getElementById('videoOptScript');
+    if (scriptInput) {
+      scriptInput.value = article.title + (article.summary ? (isUrdu ? '۔ ' : '. ') + article.summary : '');
+    }
+
+    const imgInput = document.getElementById('videoOptImages');
+    if (imgInput) {
+      imgInput.value = document.getElementById('studioImageUrlInput')?.value || article.image_url || '';
+    }
+
     document.getElementById('videoGenStatus').classList.add('d-none');
     document.getElementById('videoGenSpinner').classList.add('d-none');
     document.getElementById('videoResult').classList.add('d-none');
     document.getElementById('videoArticlePreview').classList.remove('d-none');
+    document.getElementById('videoOptionsForm').classList.remove('d-none');
     document.getElementById('videoGenStartBtn').classList.remove('d-none');
     _lastVideoResult = null;
 
@@ -1254,7 +1360,7 @@
     clearInterval(_videoTimerInterval);
     _videoTimerInterval = setInterval(() => {
       seconds++;
-      timerBadge.innerText = `Elapsed: ${seconds}s (creating frames & TTS)`;
+      timerBadge.innerText = `Elapsed: ${seconds}s (rendering frames & voiceover)`;
     }, 1000);
 
     const settings = JSON.parse(localStorage.getItem('viral_settings') || '{}');
@@ -1262,11 +1368,25 @@
     const pageHandle = document.getElementById('studioHandleInput')?.value || settings.page_handle || '@PakNewsOfficial';
     const customImg = document.getElementById('studioImageUrlInput')?.value || article.image_url;
 
+    // Advanced options from modal
+    const aspect_ratio = document.getElementById('videoOptRatio')?.value || '9:16';
+    const voice_pref = document.getElementById('videoOptVoice')?.value || 'auto';
+    const transition = document.getElementById('videoOptTransition')?.value || 'ken_burns';
+    const rawImages = (document.getElementById('videoOptImages')?.value || customImg || '').split(',').map(s => s.trim()).filter(Boolean);
+    const narrative_text = document.getElementById('videoOptScript')?.value || article.title;
+    const mute_audio = (voice_pref === 'mute');
+
     const body = {
       article: article,
       page_name: pageName,
       page_handle: pageHandle,
-      custom_image_url: customImg
+      custom_image_url: rawImages[0] || customImg,
+      image_urls: rawImages,
+      aspect_ratio: aspect_ratio,
+      voice_lang: voice_pref,
+      transition: transition,
+      narrative_text: narrative_text,
+      mute_audio: mute_audio
     };
 
     try {
@@ -1290,11 +1410,12 @@
         dlBtn.download = data.video.filename;
 
         document.getElementById('videoArticlePreview').classList.add('d-none');
+        document.getElementById('videoOptionsForm').classList.add('d-none');
         document.getElementById('videoResult').classList.remove('d-none');
         document.getElementById('videoGenStartBtn').classList.add('d-none');
 
         if (typeof showToast === 'function') {
-          showToast('Video Ready', `Created ${data.video.duration}s video in ${seconds}s!`, true);
+          showToast('Video Ready', `Created ${data.video.width}x${data.video.height} (${data.video.duration}s) news video in ${seconds}s!`, true);
         }
       } else {
         document.getElementById('videoGenStartBtn').classList.remove('d-none');
@@ -1318,8 +1439,11 @@
   async function postVideoToFB() {
     if (!_lastVideoResult) return;
     const article = getCurrentStudioArticle();
+    const studioCaption = document.getElementById('studioCaptionInput')?.value;
+    const postCaption = studioCaption || (article ? (article.title + '\n\n' + (article.summary || '')) : 'Breaking News Update');
+
     if (typeof showToast === 'function') {
-      showToast('Publishing Video', 'Posting short video to Facebook Page...', true);
+      showToast('Publishing Video', 'Posting broadcast video with exact Studio caption to Facebook Page...', true);
     }
     try {
       const resp = await fetch('/api/social/post-facebook', {
@@ -1327,14 +1451,15 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           image_path: _lastVideoResult.file_path,
-          caption: article ? article.title : 'News Update',
+          caption: postCaption,
           test_mode: false
         })
       });
       const data = await resp.json();
       if (typeof showToast === 'function') {
-        showToast(data.success ? 'FB Success' : 'FB Error', data.message || data.error || 'Done', data.success);
+        showToast(data.success ? 'FB Published!' : 'FB Notice', data.message || data.error || 'Done', data.success);
       }
+      if (data.success && typeof loadPostHistory === 'function') loadPostHistory();
     } catch (e) {
       if (typeof showToast === 'function') {
         showToast('FB Error', e.message, false);
@@ -1345,8 +1470,11 @@
   async function postVideoToTelegram() {
     if (!_lastVideoResult) return;
     const article = getCurrentStudioArticle();
+    const studioCaption = document.getElementById('studioCaptionInput')?.value;
+    const postCaption = studioCaption || (article ? (article.title + '\n\n' + (article.summary || '')) : 'Breaking News Update');
+
     if (typeof showToast === 'function') {
-      showToast('Sending to Telegram', 'Uploading video to Telegram Channel...', true);
+      showToast('Sending to Telegram', 'Uploading broadcast video with Studio caption to Telegram...', true);
     }
     try {
       const resp = await fetch('/api/social/post-telegram', {
@@ -1354,7 +1482,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           image_path: _lastVideoResult.file_path,
-          caption: article ? article.title : 'News Update'
+          caption: postCaption
         })
       });
       const data = await resp.json();

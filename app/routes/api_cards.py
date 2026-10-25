@@ -227,10 +227,17 @@ class VideoGenerateRequest(BaseModel):
     page_name:        Optional[str] = None
     page_handle:      Optional[str] = None
     custom_image_url: Optional[str] = None
+    image_urls:       Optional[List[str]] = None
+    aspect_ratio:     Optional[str] = "9:16"
+    voice_lang:       Optional[str] = "auto"
+    voice_speed:      Optional[str] = "normal"
+    transition:       Optional[str] = "ken_burns"
+    narrative_text:   Optional[str] = None
+    mute_audio:       Optional[bool] = False
 
 @router.post("/generate-video")
 def generate_video(req: VideoGenerateRequest):
-    """Generate a short animated 9:16 MP4 news clip with TTS voiceover."""
+    """Generate an advanced animated MP4 news clip with customizable ratio, multiple images, transitions, and voiceover."""
     settings = get_all_settings()
 
     art = req.article
@@ -243,6 +250,13 @@ def generate_video(req: VideoGenerateRequest):
         "page_name":        req.page_name   or settings.get("page_name",   "PAK NEWS 24/7"),
         "page_handle":      req.page_handle or settings.get("page_handle", "@PakNewsOfficial"),
         "custom_image_url": req.custom_image_url,
+        "image_urls":       req.image_urls or ([req.custom_image_url] if req.custom_image_url else []),
+        "aspect_ratio":     req.aspect_ratio or "9:16",
+        "voice_lang":       req.voice_lang or "auto",
+        "voice_speed":      req.voice_speed or "normal",
+        "transition":       req.transition or "ken_burns",
+        "narrative_text":   req.narrative_text,
+        "mute_audio":       bool(req.mute_audio)
     }
 
     try:

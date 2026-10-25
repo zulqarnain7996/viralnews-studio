@@ -35,3 +35,37 @@ def trigger_autopilot():
 def get_logs(limit: int = 30):
     logs = get_scheduler_logs(limit=limit)
     return {"success": True, "logs": logs}
+
+@router.post("/sync-vault")
+def sync_vault(req: SettingsUpdateRequest):
+    """
+    Called by client on startup with localStorage vault data.
+    Ensures that if Render container rebooted or database reset,
+    user credentials (FB Page ID, Token, TG Token) are instantly restored to SQLite.
+    """
+    current = get_all_settings()
+    updates = {}
+    for k, v in req.settings.items():
+        if v and str(v).strip():
+            # If current setting is empty or default, update it with client's saved vault
+            if not current.get(k) or current.get(k) == "":
+                updates[k] = v
+            # Always ensure tokens and IDs are synced if client has them
+            elif k in ["fb_page_id", "fb_access_token", "telegram_bot_token", "telegram_channel_id"]:
+                updates[k] = v
+
+    if updates:
+        update_settings(updates)
+        return {"success": True, "synced_count": len(updates), "settings": get_all_settings()}
+    return {"success": True, "synced_count": 0, "settings": current}
+
+@router.get("/backup")
+def backup_settings():
+    """Returns all settings for client download/export."""
+    return {"success": True, "vault": get_all_settings()}
+
+@router.post("/restore")
+def restore_settings(req: SettingsUpdateRequest):
+    """Restores settings from an uploaded JSON backup."""
+    update_settings(req.settings)
+    return {"success": True, "message": "Settings restored successfully!", "settings": get_all_settings()}

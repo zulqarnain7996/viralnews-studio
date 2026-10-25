@@ -109,11 +109,34 @@ function setLanguage(lang) {
 // ==========================================
 async function loadAppSettings() {
   try {
+    // 1. Check client-side vault in localStorage
+    let localVault = {};
+    try {
+      const rawVault = localStorage.getItem('viralnews_vault_settings');
+      if (rawVault) localVault = JSON.parse(rawVault);
+    } catch (e) { /* ignore */ }
+
+    // If local vault contains tokens, sync them with backend immediately to prevent any loss from container reboots
+    if (localVault && (localVault.fb_page_id || localVault.fb_access_token || localVault.telegram_bot_token)) {
+      try {
+        await fetch('/api/settings/sync-vault', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ settings: localVault })
+        });
+      } catch (e) { /* ignore */ }
+    }
+
     const res = await fetch('/api/settings');
     const data = await res.json();
     if (data.success) {
       appState.settings = data.settings;
       applySettingsToUI(data.settings);
+
+      // Keep client-side vault in sync with latest settings
+      try {
+        localStorage.setItem('viralnews_vault_settings', JSON.stringify(data.settings));
+      } catch (e) { /* ignore */ }
     }
   } catch (err) {
     console.error('Error loading settings:', err);
@@ -121,6 +144,9 @@ async function loadAppSettings() {
 }
 
 function applySettingsToUI(settings) {
+  if (settings.app_public_url && document.getElementById('settingAppPublicUrl')) {
+    document.getElementById('settingAppPublicUrl').value = settings.app_public_url;
+  }
   if (settings.local_city) {
     appState.currentCity = settings.local_city;
     const cityEl = document.getElementById('currentLocalCity');
@@ -295,9 +321,17 @@ async function saveAllAppSettings() {
     webhook_url: document.getElementById('settingWebhookUrl').value.trim(),
     telegram_bot_token: document.getElementById('settingTgToken').value.trim(),
     telegram_channel_id: document.getElementById('settingTgChannel').value.trim(),
+    app_public_url: document.getElementById('settingAppPublicUrl')?.value?.trim() || 'https://viralnews-studio.onrender.com',
     post_interval_minutes: document.getElementById('settingPublishInterval') ? document.getElementById('settingPublishInterval').value : '45',
     simulation_mode: document.getElementById('settingRealModeSwitch').checked ? 'false' : 'true'
   };
+
+  // 1. Immediately persist to client-side localStorage vault
+  try {
+    const existing = JSON.parse(localStorage.getItem('viralnews_vault_settings') || '{}');
+    const merged = { ...existing, ...payload };
+    localStorage.setItem('viralnews_vault_settings', JSON.stringify(merged));
+  } catch (e) { /* ignore */ }
 
   try {
     const res = await fetch('/api/settings', {
@@ -307,12 +341,83 @@ async function saveAllAppSettings() {
     });
     const data = await res.json();
     if (data.success) {
-      showToast('Settings Saved', 'Branding, API tokens, and real-posting settings saved.');
+      showToast('Settings Saved', 'Branding, API tokens, and 24/7 Keep-Alive settings saved & protected in Vault!');
       loadAppSettings();
     }
   } catch (err) {
     showToast('Error', 'Failed to save settings.', false);
   }
+}
+
+// ── 24/7 Server Keep-Alive & Ping Utilities ─────────────────────────────────
+function copyKeepAliveUrl() {
+  const url = (document.getElementById('settingAppPublicUrl')?.value || 'https://viralnews-studio.onrender.com').replace(/\/$/, '') + '/health';
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('Ping URL Copied!', `Copied: ${url}\nAdd this to Cron-job.org or UptimeRobot for guaranteed 24/7 uptime!`);
+  });
+}
+
+async function testKeepAlivePing() {
+  showToast('Testing Ping...', 'Sending instant health check request...');
+  const start = performance.now();
+  try {
+    const res = await fetch('/health');
+    const data = await res.json();
+    const duration = Math.round(performance.now() - start);
+    if (data.status === 'ok') {
+      showToast('Keep-Alive Healthy! (HTTP 200)', `Server responded in ${duration}ms! Service is 100% active.`, true);
+    } else {
+      showToast('Ping Result', JSON.stringify(data), true);
+    }
+  } catch (e) {
+    showToast('Ping Failed', e.message, false);
+  }
+}
+
+// ── Zero-Data-Loss Settings Backup & Restore ─────────────────────────────────
+async function exportSettingsBackup() {
+  try {
+    const res = await fetch('/api/settings/backup');
+    const data = await res.json();
+    const blob = new Blob([JSON.stringify(data.vault || {}, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ViralNews_Settings_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Settings Exported', 'Downloaded backup JSON file with your tokens and configuration.');
+  } catch (e) {
+    showToast('Export Error', e.message, false);
+  }
+}
+
+function importSettingsRestore(fileInput) {
+  if (!fileInput.files || !fileInput.files[0]) return;
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      localStorage.setItem('viralnews_vault_settings', JSON.stringify(parsed));
+
+      const res = await fetch('/api/settings/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ settings: parsed })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Settings Restored!', 'Tokens, branding, and credentials restored successfully!', true);
+        loadAppSettings();
+      } else {
+        showToast('Restore Failed', data.message || 'Could not parse settings.', false);
+      }
+    } catch (err) {
+      showToast('Invalid File', 'Could not parse JSON file: ' + err.message, false);
+    }
+  };
+  reader.readAsText(file);
 }
 
 // ==========================================

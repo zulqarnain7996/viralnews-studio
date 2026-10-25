@@ -4,6 +4,24 @@ import json
 from datetime import datetime
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "app.db")
+VAULT_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "settings_vault.json")
+
+def _load_vault():
+    if os.path.exists(VAULT_PATH):
+        try:
+            with open(VAULT_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def _save_vault(data):
+    try:
+        os.makedirs(os.path.dirname(VAULT_PATH), exist_ok=True)
+        with open(VAULT_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"[Database Vault] Error writing vault: {e}")
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)
@@ -112,21 +130,77 @@ def init_db():
         
         for k, v in default_settings.items():
             cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)", (k, v))
+        
+        # Restore from persistent vault file if available
+        vault = _load_vault()
+        for vk, vv in vault.items():
+            if vv is not None and str(vv).strip():
+                cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (vk, str(vv)))
+
+        # Also import any environment variables that might be configured on Render
+        env_mappings = {
+            "FB_PAGE_ID": "fb_page_id",
+            "FB_ACCESS_TOKEN": "fb_access_token",
+            "TELEGRAM_BOT_TOKEN": "telegram_bot_token",
+            "TELEGRAM_CHANNEL_ID": "telegram_channel_id",
+            "PAGE_NAME": "page_name",
+            "PAGE_HANDLE": "page_handle",
+            "WEBHOOK_URL": "webhook_url",
+            "SIMULATION_MODE": "simulation_mode",
+            "APP_PUBLIC_URL": "app_public_url"
+        }
+        for env_k, setting_k in env_mappings.items():
+            val = os.getenv(env_k) or os.getenv(env_k.lower())
+            if val:
+                cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (setting_k, str(val)))
+
         conn.commit()
 
 def get_setting(key, default=""):
+    # 1. Check environment variables first (highest priority, immune to container reboot)
+    env_val = os.getenv(key.upper()) or os.getenv(key)
+    if env_val:
+        return env_val
+
+    # 2. Check SQLite settings table
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT value FROM settings WHERE key = ?", (key,))
         row = cursor.fetchone()
-        return row["value"] if row else default
+        val = row["value"] if row else ""
+        if val is not None and str(val).strip():
+            return val
+
+    # 3. Fallback to vault file
+    vault = _load_vault()
+    if key in vault and vault[key] is not None and str(vault[key]).strip():
+        return vault[key]
+
+    return default
 
 def get_all_settings():
+    settings = {}
+    # Load from SQLite
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT key, value FROM settings")
         rows = cursor.fetchall()
-        return {row["key"]: row["value"] for row in rows}
+        for row in rows:
+            settings[row["key"]] = row["value"]
+
+    # Overlay vault
+    vault = _load_vault()
+    for vk, vv in vault.items():
+        if vv and not settings.get(vk):
+            settings[vk] = vv
+
+    # Overlay environment variables
+    for k in ["fb_page_id", "fb_access_token", "telegram_bot_token", "telegram_channel_id", "page_name", "page_handle", "webhook_url", "simulation_mode", "app_public_url"]:
+        env_v = os.getenv(k.upper()) or os.getenv(k)
+        if env_v:
+            settings[k] = env_v
+
+    return settings
 
 def update_settings(settings_dict):
     with get_connection() as conn:
@@ -134,6 +208,12 @@ def update_settings(settings_dict):
         for k, v in settings_dict.items():
             cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (k, str(v)))
         conn.commit()
+
+    # Also persist to vault file
+    current = _load_vault()
+    for k, v in settings_dict.items():
+        current[k] = str(v)
+    _save_vault(current)
 
 def save_article(article):
     with get_connection() as conn:

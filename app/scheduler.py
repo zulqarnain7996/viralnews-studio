@@ -185,6 +185,24 @@ def run_autopilot_cycle(manual_trigger=False):
         log_scheduler("auto_pilot_error", str(e), "error")
         return {"status": "error", "message": str(e)}
 
+def keep_alive_ping():
+    """
+    Pings the server's own public URL (e.g. https://viralnews-studio.onrender.com/health)
+    every 8 minutes. Because the request travels through public DNS / Render's edge proxy,
+    Render registers active incoming HTTP traffic, resetting the 15-minute inactivity sleep counter
+    and keeping the service awake 24/7!
+    """
+    import requests
+    public_url = get_setting("app_public_url", "https://viralnews-studio.onrender.com").rstrip("/")
+    try:
+        ping_url = f"{public_url}/health"
+        res = requests.get(ping_url, timeout=15)
+        if res.status_code == 200:
+            log_scheduler("keep_alive_ping", f"Self-ping to {ping_url} (HTTP 200) — Server awake 24/7", "info")
+    except Exception as e:
+        # Ignore network errors on localhost or during startup
+        pass
+
 def init_scheduler():
     """Initializes and starts the background scheduler."""
     if not scheduler.running:
@@ -205,8 +223,16 @@ def init_scheduler():
             id='queue_worker_job',
             replace_existing=True
         )
+        # 3. 24/7 Keep-Alive Self-Pinger (runs every 8 minutes to prevent Render sleep)
+        scheduler.add_job(
+            keep_alive_ping,
+            'interval',
+            minutes=8,
+            id='keep_alive_ping_job',
+            replace_existing=True
+        )
         scheduler.start()
-        print(f"[Scheduler] Started background auto-pilot every {interval_hours}h and queue processor every 5m.")
+        print(f"[Scheduler] Started background auto-pilot every {interval_hours}h, queue processor every 5m, and keep-alive pinger every 8m.")
 
 def update_scheduler_interval(interval_hours):
     """Updates the execution interval of the running scheduler."""
