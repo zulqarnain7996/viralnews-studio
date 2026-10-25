@@ -4,95 +4,7 @@
  */
 
 const THEMES = {
-  breaking_red: {
-    layout: 'classic',
-    headerBg: '#dc143c',
-    headerText: '#ffffff',
-    accent: '#ffd700',
-    badgeBg: '#b4001e',
-    badgeText: '#ffffff',
-    headlineColor: '#ffffff',
-    boxBg: 'rgba(15, 17, 23, 0.92)',
-    footerBg: '#c80f2d'
-  },
-  pakistan_green: {
-    layout: 'classic',
-    headerBg: '#01411c',
-    headerText: '#ffffff',
-    accent: '#ffffff',
-    badgeBg: '#008037',
-    badgeText: '#ffffff',
-    headlineColor: '#ffffff',
-    boxBg: 'rgba(5, 35, 15, 0.94)',
-    footerBg: '#01411c'
-  },
-  viral_dark: {
-    layout: 'classic',
-    headerBg: '#141821',
-    headerText: '#ffffff',
-    accent: '#00e5ff',
-    badgeBg: '#00b4d8',
-    badgeText: '#000000',
-    headlineColor: '#ffffff',
-    boxBg: 'rgba(10, 12, 18, 0.94)',
-    footerBg: '#0f1219'
-  },
-  royal_blue: {
-    layout: 'classic',
-    headerBg: '#0a3871',
-    headerText: '#ffffff',
-    accent: '#ffcc00',
-    badgeBg: '#1565c0',
-    badgeText: '#ffffff',
-    headlineColor: '#ffffff',
-    boxBg: 'rgba(8, 22, 44, 0.94)',
-    footerBg: '#0a3871'
-  },
-  buzz_yellow: {
-    layout: 'classic',
-    headerBg: '#ffcc00',
-    headerText: '#000000',
-    accent: '#dc143c',
-    badgeBg: '#000000',
-    badgeText: '#ffcc00',
-    headlineColor: '#ffffff',
-    boxBg: 'rgba(18, 18, 18, 0.94)',
-    footerBg: '#ffcc00',
-    footerText: '#000000'
-  },
-  editorial_purple: {
-    layout: 'classic',
-    headerBg: '#4a154b',
-    headerText: '#ffffff',
-    accent: '#e01e5a',
-    badgeBg: '#6e1e73',
-    badgeText: '#ffffff',
-    headlineColor: '#ffffff',
-    boxBg: 'rgba(25, 10, 28, 0.94)',
-    footerBg: '#4a154b'
-  },
-  quote_card: {
-    layout: 'classic',
-    headerBg: '#1e232d',
-    headerText: '#ffffff',
-    accent: '#3b82f6',
-    badgeBg: '#2563eb',
-    badgeText: '#ffffff',
-    headlineColor: '#ffffff',
-    boxBg: 'rgba(15, 18, 24, 0.95)',
-    footerBg: '#181c26'
-  },
-  urdu_khabarnama: {
-    layout: 'classic',
-    headerBg: '#be0000',
-    headerText: '#ffffff',
-    accent: '#ffffff',
-    badgeBg: '#ffd700',
-    badgeText: '#a00000',
-    headlineColor: '#ffffff',
-    boxBg: 'rgba(12, 12, 16, 0.95)',
-    footerBg: '#be0000'
-  },
+  // --- TOP-TIER BROADCAST SPLIT STYLES (No zoom, perfect landscape viewport) ---
   turkiye_urdu_split: {
     layout: 'turkiye',
     bottomBg: '#a5000a',
@@ -101,6 +13,26 @@ const THEMES = {
     headlineColor: '#ffd700',
     footerBg: '#780007',
     badgeText: '#ffd700'
+  },
+  royal_gold_split: {
+    layout: 'royal_gold_split',
+    bottomBg: '#360008',
+    accent: '#ffd700',
+    logoBg: '#2a0006',
+    headlineColor: '#ffd700',
+    footerBg: '#1f0004',
+    badgeBg: '#ffd700',
+    badgeText: '#000000'
+  },
+  neon_cyber_split: {
+    layout: 'neon_cyber_split',
+    bottomBg: '#090d16',
+    accent: '#00f0ff',
+    logoBg: '#001a26',
+    headlineColor: '#ffffff',
+    footerBg: '#04070c',
+    badgeBg: '#00f0ff',
+    badgeText: '#000000'
   },
   turkiye_emerald_split: {
     layout: 'turkiye',
@@ -119,54 +51,6 @@ const THEMES = {
     headlineColor: '#00f0ff',
     footerBg: '#0e1017',
     badgeText: '#00f0ff'
-  },
-  dw_quote_blue: {
-    layout: 'dw_quote',
-    bg: '#0096e6',
-    quoteColor: '#002855',
-    headlineColor: '#00234b',
-    summaryColor: '#003575',
-    logoBg: '#00234b',
-    footerBg: '#007bbd'
-  },
-  dw_quote_dark: {
-    layout: 'dw_quote',
-    bg: '#12161e',
-    quoteColor: '#00f0ff',
-    headlineColor: '#ffffff',
-    summaryColor: '#cbd5e1',
-    logoBg: '#00f0ff',
-    logoText: '#000000',
-    footerBg: '#0c0f14'
-  },
-  dw_quote_red: {
-    layout: 'dw_quote',
-    bg: '#b40a19',
-    quoteColor: '#ffd700',
-    headlineColor: '#ffffff',
-    summaryColor: '#ffea75',
-    logoBg: '#780007',
-    footerBg: '#820510'
-  },
-  neon_cyber_split: {
-    layout: 'neon_cyber_split',
-    bottomBg: '#090d16',
-    accent: '#00f0ff',
-    logoBg: '#001a26',
-    headlineColor: '#ffffff',
-    footerBg: '#04070c',
-    badgeBg: '#00f0ff',
-    badgeText: '#000000'
-  },
-  royal_gold_split: {
-    layout: 'royal_gold_split',
-    bottomBg: '#360008',
-    accent: '#ffd700',
-    logoBg: '#2a0006',
-    headlineColor: '#ffd700',
-    footerBg: '#1f0004',
-    badgeBg: '#ffd700',
-    badgeText: '#000000'
   },
   vox_spotlight_dark: {
     layout: 'vox_spotlight',
@@ -193,7 +77,67 @@ const THEMES = {
     accent: '#ff1e38',
     headlineColor: '#ffffff',
     badgeBg: '#ff1e38'
-  }
+  },
+
+  // --- DW EDITORIAL QUOTE CARDS (Fixed brand pill, 44% photo) ---
+  dw_quote_red: {
+    layout: 'dw_quote',
+    bg: '#b40a19',
+    quoteColor: '#ffd700',
+    headlineColor: '#ffffff',
+    summaryColor: '#ffea75',
+    logoBg: '#780007',
+    footerBg: '#820510'
+  },
+  dw_quote_blue: {
+    layout: 'dw_quote',
+    bg: '#0096e6',
+    quoteColor: '#002855',
+    headlineColor: '#00234b',
+    summaryColor: '#003575',
+    logoBg: '#00234b',
+    footerBg: '#007bbd'
+  },
+
+  // --- BRAND NEW PRESTIGE NEWS DESIGNS ---
+  axios_minimal: {
+    layout: 'axios_minimal',
+    bg: '#0a0d14',
+    accent: '#00f0ff',
+    headlineColor: '#ffffff',
+    footerBg: '#07090f'
+  },
+  bbc_broadcast: {
+    layout: 'bbc_broadcast',
+    bg: '#14171e',
+    accent: '#bb1919',
+    headlineColor: '#ffffff',
+    footerBg: '#0b0d11'
+  },
+  glass_prism: {
+    layout: 'glass_prism',
+    bg: '#06080e',
+    accent: '#c084fc',
+    headlineColor: '#ffffff',
+    footerBg: '#0f172a'
+  },
+  aurora_emerald: {
+    layout: 'aurora_emerald',
+    bg: '#012010',
+    accent: '#ffd700',
+    headlineColor: '#ffd700',
+    footerBg: '#001207'
+  },
+
+  // --- SAFE ALIASES (Upgraded to non-zoomed split layouts) ---
+  breaking_red: { layout: 'turkiye', bottomBg: '#b30010', accent: '#ffd700', logoBg: '#8a000c', headlineColor: '#ffffff', footerBg: '#660009' },
+  pakistan_green: { layout: 'aurora_emerald', bg: '#012010', accent: '#ffd700', headlineColor: '#ffd700', footerBg: '#001207' },
+  viral_dark: { layout: 'neon_cyber_split', bottomBg: '#090d16', accent: '#00f0ff', logoBg: '#001a26', headlineColor: '#ffffff', footerBg: '#04070c' },
+  royal_blue: { layout: 'dw_quote', bg: '#0096e6', quoteColor: '#002855', headlineColor: '#00234b', summaryColor: '#003575', logoBg: '#00234b', footerBg: '#007bbd' },
+  buzz_yellow: { layout: 'turkiye', bottomBg: '#ffcc00', accent: '#dc143c', logoBg: '#000000', headlineColor: '#000000', footerBg: '#d4aa00' },
+  editorial_purple: { layout: 'glass_prism', bg: '#06080e', accent: '#c084fc', headlineColor: '#ffffff', footerBg: '#0f172a' },
+  quote_card: { layout: 'dw_quote', bg: '#161922', quoteColor: '#00f0ff', headlineColor: '#ffffff', summaryColor: '#cbd5e1', logoBg: '#00f0ff', footerBg: '#0c0f14' },
+  urdu_khabarnama: { layout: 'ticker_tv', tickerBg: '#cc0010', bottomBg: '#0b1220', accent: '#ff2035', logoBg: 'rgba(0,0,0,0.7)', headlineColor: '#ffffff', footerBg: '#060a12' }
 };
 
 const THEMATIC_BACKDROPS = {
@@ -220,9 +164,121 @@ let currentStudioState = {
   fontSize: 52,
   headlineColor: null, // null means use theme default
   textAlign: 'auto',   // 'auto', 'right', 'center', 'left'
-  overlayDarkness: 0,  // 0 to 70%
+  overlayDarkness: 0,  // 0 to 75%
+  photoZoom: 100,      // 100% to 160%
+  photoOffsetY: 0,     // -50% to +50% vertical pan
   loadedImg: null
 };
+
+// User-created Custom Themes from Template Studio
+let USER_CUSTOM_THEMES = {};
+
+function loadUserCustomThemes() {
+  try {
+    const raw = localStorage.getItem('viralnews_custom_themes');
+    if (raw) {
+      USER_CUSTOM_THEMES = JSON.parse(raw);
+    }
+  } catch (e) {
+    console.warn('Could not load custom themes from storage:', e);
+  }
+}
+
+// Load custom themes on start
+loadUserCustomThemes();
+
+/**
+ * Draws a broadcast-grade brand badge/pill whose background box
+ * dynamically adapts to the exact width and height of the text (like HTML inline-block padding),
+ * preventing any text spill or awkward clipping.
+ */
+function drawAdaptiveBrandPill(context, text, x, y, options = {}) {
+  if (!text) return { width: 0, height: 0 };
+
+  const isUrdu = isUrduText(text);
+  const maxAllowedW = options.maxWidth || 500;
+  let fontSize = options.fontSize || 24;
+
+  context.font = isUrdu
+    ? `800 ${fontSize}px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif`
+    : `900 ${fontSize}px "Montserrat", "Impact", "Inter", sans-serif`;
+
+  let textWidth = context.measureText(text.toUpperCase()).width;
+
+  // Scale down font smoothly if text is very long so it fits within maxAllowedW
+  while (textWidth > (maxAllowedW - 44) && fontSize > 16) {
+    fontSize -= 1.5;
+    context.font = isUrdu
+      ? `800 ${fontSize}px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif`
+      : `900 ${fontSize}px "Montserrat", "Impact", "Inter", sans-serif`;
+    textWidth = context.measureText(text.toUpperCase()).width;
+  }
+
+  const padX = options.paddingX || 22;
+  const padY = options.paddingY || 12;
+  const pillW = Math.max(textWidth + (padX * 2), options.minWidth || 140);
+  const pillH = options.height || Math.floor(fontSize * 1.5 + padY * 2);
+  const radius = options.radius !== undefined ? options.radius : 10;
+  const fillStyle = options.bg || '#a5000a';
+  const textColor = options.textColor || '#ffffff';
+  const borderColor = options.borderColor || 'rgba(255, 255, 255, 0.4)';
+  const borderWidth = options.borderWidth !== undefined ? options.borderWidth : 2;
+
+  context.save();
+  // Drop shadow for high-contrast broadcast separation
+  context.shadowColor = 'rgba(0, 0, 0, 0.65)';
+  context.shadowBlur = 10;
+  context.shadowOffsetX = 0;
+  context.shadowOffsetY = 3;
+
+  context.fillStyle = fillStyle;
+  if (context.roundRect) {
+    context.beginPath();
+    context.roundRect(x, y, pillW, pillH, radius);
+    context.fill();
+  } else {
+    context.fillRect(x, y, pillW, pillH);
+  }
+  context.shadowColor = 'transparent';
+
+  // Crisp border
+  if (borderWidth > 0) {
+    context.lineWidth = borderWidth;
+    context.strokeStyle = borderColor;
+    if (context.roundRect) {
+      context.beginPath();
+      context.roundRect(x, y, pillW, pillH, radius);
+      context.stroke();
+    } else {
+      context.strokeRect(x, y, pillW, pillH);
+    }
+  }
+
+  // Left live/verified pip if enabled
+  let textStartX = x + pillW / 2;
+  let textBaselineAlign = 'center';
+  if (options.showIndicator) {
+    const dotX = x + 16;
+    const dotY = y + pillH / 2;
+    context.fillStyle = options.indicatorColor || '#00f0ff';
+    context.beginPath();
+    context.arc(dotX, dotY, 4.5, 0, Math.PI * 2);
+    context.fill();
+    textStartX = x + 28 + (pillW - 32) / 2;
+  }
+
+  // Render Page Brand text
+  context.font = isUrdu
+    ? `800 ${fontSize}px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif`
+    : `900 ${fontSize}px "Montserrat", "Impact", "Inter", sans-serif`;
+  context.fillStyle = textColor;
+  context.textAlign = textBaselineAlign;
+  context.textBaseline = 'middle';
+  context.fillText(text.toUpperCase(), textStartX, y + pillH / 2);
+
+  context.restore();
+  return { width: pillW, height: pillH };
+}
 
 let canvas = null;
 let ctx = null;
@@ -298,7 +354,7 @@ function loadFallbackImg(callback) {
 }
 
 function setStudioTheme(themeKey) {
-  if (!THEMES[themeKey]) return;
+  if (!THEMES[themeKey] && !USER_CUSTOM_THEMES[themeKey]) return;
   currentStudioState.theme = themeKey;
   
   document.querySelectorAll('.theme-btn').forEach(btn => {
@@ -316,6 +372,20 @@ function setStudioTheme(themeKey) {
     targetBtn.appendChild(badge);
   }
   
+  renderStudioCanvas();
+}
+
+function setPhotoZoom(val) {
+  currentStudioState.photoZoom = parseInt(val) || 100;
+  const label = document.getElementById('studioZoomVal');
+  if (label) label.innerText = `${currentStudioState.photoZoom}%`;
+  renderStudioCanvas();
+}
+
+function setPhotoOffsetY(val) {
+  currentStudioState.photoOffsetY = parseInt(val) || 0;
+  const label = document.getElementById('studioPanVal');
+  if (label) label.innerText = `${currentStudioState.photoOffsetY > 0 ? '+' : ''}${currentStudioState.photoOffsetY}%`;
   renderStudioCanvas();
 }
 
@@ -481,7 +551,9 @@ function renderStudioCanvas() {
   if (sizeValLabel) sizeValLabel.innerText = `${fontSize}px`;
 
   // Dispatch to the matching template layout engine
-  if (theme.layout === 'turkiye') {
+  if (USER_CUSTOM_THEMES[currentStudioState.theme]) {
+    renderCustomUserLayout(USER_CUSTOM_THEMES[currentStudioState.theme], width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu);
+  } else if (theme.layout === 'turkiye') {
     renderTurkiyeSplitLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu);
   } else if (theme.layout === 'dw_quote') {
     renderDWQuoteLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu);
@@ -495,8 +567,16 @@ function renderStudioCanvas() {
     renderTickerTVLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu);
   } else if (theme.layout === 'cinematic_letterbox') {
     renderCinematicLetterboxLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu);
+  } else if (theme.layout === 'axios_minimal') {
+    renderAxiosMinimalLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu);
+  } else if (theme.layout === 'bbc_broadcast') {
+    renderBBCBroadcastLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu);
+  } else if (theme.layout === 'glass_prism') {
+    renderGlassPrismLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu);
+  } else if (theme.layout === 'aurora_emerald') {
+    renderAuroraEmeraldLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu);
   } else {
-    renderClassicBroadcastLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu);
+    renderTurkiyeSplitLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu);
   }
 }
 
@@ -510,30 +590,8 @@ function renderTurkiyeSplitLayout(theme, width, height, pageName, categoryTag, t
   ctx.fillStyle = '#0f1117';
   ctx.fillRect(0, 0, width, height);
 
-  // 2. Top Half: Photo with aspect fill
-  if (currentStudioState.loadedImg) {
-    const img = currentStudioState.loadedImg;
-    const targetH = splitY;
-    const imgRatio = img.width / img.height;
-    const targetRatio = width / targetH;
-    let renderW, renderH, cropX, cropY;
-
-    if (imgRatio > targetRatio) {
-      renderH = targetH;
-      renderW = targetH * imgRatio;
-      cropX = (renderW - width) / 2;
-      cropY = 0;
-    } else {
-      renderW = width;
-      renderH = width / imgRatio;
-      cropX = 0;
-      cropY = (renderH - targetH) / 2;
-    }
-    ctx.drawImage(img, -cropX, -cropY, renderW, renderH);
-  } else {
-    ctx.fillStyle = '#1e2330';
-    ctx.fillRect(0, 0, width, splitY);
-  }
+  // 2. Top Half: Photo with aspect fill & pan controls (zero distortion)
+  drawFittedPhoto(ctx, currentStudioState.loadedImg, 0, 0, width, splitY, currentStudioState.photoZoom / 100, currentStudioState.photoOffsetY);
 
   // Darkness overlay on photo if configured
   if (currentStudioState.overlayDarkness > 0) {
@@ -541,21 +599,18 @@ function renderTurkiyeSplitLayout(theme, width, height, pageName, categoryTag, t
     ctx.fillRect(0, 0, width, splitY);
   }
 
-  // Top-left Logo Box (White border with theme fill)
-  const logoW = 200;
-  const logoH = 75;
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(25, 25, logoW, logoH);
-  ctx.fillStyle = theme.logoBg || '#a5000a';
-  ctx.fillRect(30, 30, logoW - 10, logoH - 10);
-
-  ctx.font = isUrduText(pageName) 
-    ? '800 24px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
-    : '900 26px "Montserrat", "Impact", sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(pageName, 25 + logoW / 2, 25 + logoH / 2);
+  // Top-left Logo Box with Dynamic Adaptive Pill (Fits exact text length, no spill)
+  drawAdaptiveBrandPill(ctx, pageName, 25, 25, {
+    bg: theme.logoBg || '#a5000a',
+    textColor: '#ffffff',
+    borderColor: '#ffffff',
+    borderWidth: 3,
+    radius: 10,
+    fontSize: 24,
+    showIndicator: true,
+    indicatorColor: theme.accent || '#ffd700',
+    maxWidth: width - 180
+  });
 
   // Top-right Red LIVE Badge
   const liveW = 90;
@@ -670,42 +725,25 @@ function renderDWQuoteLayout(theme, width, height, pageName, categoryTag, title,
   const photoW = width - (photoMargin * 2);
   const photoH = Math.floor(height * 0.44);
 
-  if (currentStudioState.loadedImg) {
-    const img = currentStudioState.loadedImg;
-    const imgRatio = img.width / img.height;
-    const targetRatio = photoW / photoH;
-    let renderW, renderH, cropX, cropY;
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(photoMargin, photoMargin, photoW, photoH, 8) : ctx.rect(photoMargin, photoMargin, photoW, photoH);
+  ctx.clip();
+  drawFittedPhoto(ctx, currentStudioState.loadedImg, photoMargin, photoMargin, photoW, photoH, currentStudioState.photoZoom / 100, currentStudioState.photoOffsetY);
+  ctx.restore();
 
-    if (imgRatio > targetRatio) {
-      renderH = photoH;
-      renderW = photoH * imgRatio;
-      cropX = (renderW - photoW) / 2;
-      cropY = 0;
-    } else {
-      renderW = photoW;
-      renderH = photoW / imgRatio;
-      cropX = 0;
-      cropY = (renderH - photoH) / 2;
-    }
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.roundRect ? ctx.roundRect(photoMargin, photoMargin, photoW, photoH, 8) : ctx.rect(photoMargin, photoMargin, photoW, photoH);
-    ctx.clip();
-    ctx.drawImage(img, photoMargin - cropX, photoMargin - cropY, renderW, renderH);
-    ctx.restore();
-  }
-
-  // DW Page Brand Pill on Top-Left of Photo
-  const pillW = 180;
-  const pillH = 50;
-  ctx.fillStyle = theme.logoBg || '#00234b';
-  ctx.fillRect(photoMargin + 15, photoMargin + 15, pillW, pillH);
-  ctx.font = '800 22px "Inter", sans-serif';
-  ctx.fillStyle = theme.logoText || '#ffffff';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(pageName.toUpperCase(), photoMargin + 15 + pillW / 2, photoMargin + 15 + pillH / 2);
+  // DW Page Brand Pill on Top-Left of Photo (Adaptive dynamic width, perfectly fitting text)
+  drawAdaptiveBrandPill(ctx, pageName, photoMargin + 15, photoMargin + 15, {
+    bg: theme.logoBg || '#00234b',
+    textColor: theme.logoText || '#ffffff',
+    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderWidth: 2,
+    radius: 8,
+    fontSize: 22,
+    showIndicator: true,
+    indicatorColor: theme.quoteColor || '#ffd700',
+    maxWidth: photoW - 140
+  });
 
   // 3. Bottom Half: Massive Quotation Mark + Quote Text
   const quoteStartY = photoMargin + photoH + 20;
@@ -1072,25 +1110,17 @@ function renderNeonCyberSplitLayout(theme, width, height, pageName, categoryTag,
   ctx.stroke();
 
   // Channel Logo Pill (Top-Left)
-  const pillW = Math.max(220, ctx.measureText(pageName).width + 60);
-  const pillH = 54;
-  ctx.fillStyle = 'rgba(6, 12, 24, 0.9)';
-  ctx.fillRect(35, 25, pillW, pillH);
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = cyan;
-  ctx.strokeRect(35, 25, pillW, pillH);
-
-  // Cyan active pip
-  ctx.fillStyle = cyan;
-  ctx.fillRect(45, 33, 6, pillH - 16);
-
-  ctx.font = isUrduText(pageName) 
-    ? '800 24px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
-    : '900 26px "Montserrat", "Impact", sans-serif';
-  ctx.fillStyle = '#ffffff';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(pageName.toUpperCase(), 62, 25 + pillH / 2);
+  drawAdaptiveBrandPill(ctx, pageName, 35, 25, {
+    bg: 'rgba(6, 12, 24, 0.92)',
+    textColor: '#ffffff',
+    borderColor: cyan,
+    borderWidth: 2,
+    radius: 8,
+    fontSize: 24,
+    showIndicator: true,
+    indicatorColor: cyan,
+    maxWidth: width - 180
+  });
 
   // Top-right Red LIVE HD Badge
   const liveW = 110;
@@ -1261,21 +1291,18 @@ function renderRoyalGoldSplitLayout(theme, width, height, pageName, categoryTag,
   ctx.strokeStyle = gold;
   ctx.strokeRect(4, 4, width - 8, splitY - 4);
 
-  // Top-Left Gold Crest Box
-  const crestW = Math.max(220, ctx.measureText(pageName).width + 60);
-  const crestH = 60;
-  ctx.fillStyle = '#ffd700';
-  ctx.fillRect(25, 20, crestW, crestH);
-  ctx.fillStyle = '#2c0006';
-  ctx.fillRect(28, 23, crestW - 6, crestH - 6);
-
-  ctx.font = isUrduText(pageName) 
-    ? '800 26px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
-    : '900 28px "Montserrat", "Impact", sans-serif';
-  ctx.fillStyle = goldLight;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(pageName.toUpperCase(), 25 + crestW / 2, 20 + crestH / 2);
+  // Top-Left Gold Crest Box (Adaptive Pill)
+  drawAdaptiveBrandPill(ctx, pageName, 25, 20, {
+    bg: '#2c0006',
+    textColor: goldLight,
+    borderColor: gold,
+    borderWidth: 3,
+    radius: 8,
+    fontSize: 24,
+    showIndicator: true,
+    indicatorColor: gold,
+    maxWidth: width - 180
+  });
 
   // Top-Right Deep Red & Gold LIVE Badge
   const liveW = 105;
@@ -1842,6 +1869,962 @@ function renderCinematicLetterboxLayout(theme, width, height, pageName, category
   ctx.fillText(`${source}   |   ${categoryTag}   |   ${handle}`, width / 2, height - 20);
 }
 
+// ========================================================
+// 9. AXIOS MINIMAL LAYOUT (Ultra-Clean Newsletter Style)
+// ========================================================
+function renderAxiosMinimalLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu) {
+  const accent = theme.accent || '#00f0ff';
+  const bg = theme.bg || '#0a0d14';
+
+  // 1. Full dark background
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, width, height);
+
+  // 2. Full-bleed photo in top ~60%
+  const photoH = Math.floor(height * 0.60);
+  drawFittedPhoto(ctx, currentStudioState.loadedImg, 0, 0, width, photoH, currentStudioState.photoZoom / 100, currentStudioState.photoOffsetY);
+
+  if (currentStudioState.overlayDarkness > 0) {
+    ctx.fillStyle = `rgba(0, 0, 0, ${currentStudioState.overlayDarkness / 100})`;
+    ctx.fillRect(0, 0, width, photoH);
+  }
+
+  // Top vignette for brand pill readability
+  const topGrad = ctx.createLinearGradient(0, 0, 0, 120);
+  topGrad.addColorStop(0, 'rgba(0, 0, 0, 0.75)');
+  topGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, width, 120);
+
+  // Bottom gradient fade from photo into bg
+  const fadeH = 160;
+  const fadeGrad = ctx.createLinearGradient(0, photoH - fadeH, 0, photoH);
+  fadeGrad.addColorStop(0, 'rgba(10, 13, 20, 0)');
+  fadeGrad.addColorStop(1, bg);
+  ctx.fillStyle = fadeGrad;
+  ctx.fillRect(0, photoH - fadeH, width, fadeH);
+
+  // 3. Brand Pill (Top-Left)
+  drawAdaptiveBrandPill(ctx, pageName, 30, 25, {
+    bg: 'rgba(10, 13, 20, 0.85)',
+    textColor: '#ffffff',
+    borderColor: accent,
+    borderWidth: 2,
+    radius: 8,
+    fontSize: 22,
+    showIndicator: true,
+    indicatorColor: accent,
+    maxWidth: width - 200
+  });
+
+  // LIVE Badge (Top-Right)
+  const liveW = 90;
+  const liveH = 38;
+  const liveX = width - liveW - 30;
+  const liveY = 28;
+  ctx.fillStyle = '#e50914';
+  ctx.fillRect(liveX, liveY, liveW, liveH);
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = '#ffffff';
+  ctx.strokeRect(liveX, liveY, liveW, liveH);
+  ctx.font = '700 18px "Inter", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('LIVE', liveX + liveW / 2, liveY + liveH / 2);
+
+  // 4. Frosted glass headline overlay at bottom of photo
+  const glassTop = photoH - 100;
+  const glassH = 100;
+  ctx.fillStyle = 'rgba(10, 13, 20, 0.55)';
+  ctx.fillRect(0, glassTop, width, glassH);
+  // Simulated frosted top edge
+  const frostEdge = ctx.createLinearGradient(0, glassTop - 10, 0, glassTop + 20);
+  frostEdge.addColorStop(0, 'rgba(10, 13, 20, 0)');
+  frostEdge.addColorStop(1, 'rgba(10, 13, 20, 0.4)');
+  ctx.fillStyle = frostEdge;
+  ctx.fillRect(0, glassTop - 10, width, 30);
+
+  // Category tag on frosted glass
+  ctx.font = isUrduText(categoryTag)
+    ? '800 22px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+    : '800 20px "Inter", sans-serif';
+  const catTagW = ctx.measureText(categoryTag).width + 30;
+  const catTagH = 36;
+  const catTagX = isUrdu ? width - catTagW - 35 : 35;
+  const catTagY = glassTop + 14;
+  ctx.fillStyle = accent;
+  ctx.fillRect(catTagX, catTagY, catTagW, catTagH);
+  ctx.fillStyle = '#000000';
+  ctx.textAlign = 'center';
+  ctx.fillText(categoryTag, catTagX + catTagW / 2, catTagY + catTagH / 2);
+
+  // 5. Thin accent line divider
+  ctx.fillStyle = accent;
+  ctx.fillRect(35, photoH + 10, width - 70, 3);
+
+  // 6. Headline Text Below Photo
+  const headlineFont = isUrdu
+    ? `800 ${fontSize}px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif`
+    : `900 ${fontSize}px "Impact", "Montserrat", sans-serif`;
+  ctx.font = headlineFont;
+
+  const maxTextW = width - 80;
+  const headlineLines = wrapText(ctx, title, maxTextW).slice(0, 3);
+  const lineH = Math.floor(fontSize * 1.55);
+
+  const fontSummary = isUrdu
+    ? '700 24px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+    : '600 22px "Inter", sans-serif';
+  ctx.font = fontSummary;
+  const summaryLines = summary ? wrapText(ctx, summary, maxTextW).slice(0, 2) : [];
+  const summaryLineH = 34;
+
+  const totalTextH = (headlineLines.length * lineH) + (summaryLines.length > 0 ? (summaryLines.length * summaryLineH + 18) : 0);
+  const availableH = height - photoH - 80;
+  let curY = photoH + Math.max(25, Math.floor((availableH - totalTextH) / 2)) + Math.floor(fontSize * 0.75);
+
+  ctx.font = headlineFont;
+  const align = currentStudioState.textAlign === 'auto' ? (isUrdu ? 'right' : 'left') : currentStudioState.textAlign;
+  ctx.textAlign = align;
+  let textX = 45;
+  if (align === 'center') textX = width / 2;
+  if (align === 'right') textX = width - 45;
+
+  const hlColor = currentStudioState.headlineColor || theme.headlineColor || '#ffffff';
+
+  headlineLines.forEach(line => {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.fillText(line, textX + 3, curY + 3);
+    ctx.fillStyle = hlColor;
+    ctx.fillText(line, textX, curY);
+    curY += lineH;
+  });
+
+  if (summaryLines.length > 0) {
+    curY += 10;
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(40, curY - 12);
+    ctx.lineTo(width - 40, curY - 12);
+    ctx.stroke();
+
+    ctx.font = fontSummary;
+    summaryLines.forEach(sLine => {
+      ctx.fillStyle = 'rgba(200, 215, 235, 0.9)';
+      ctx.fillText(sLine, textX, curY);
+      curY += summaryLineH;
+    });
+  }
+
+  // 7. Minimalist Footer
+  const footerH = 58;
+  const footerY = height - footerH;
+  ctx.fillStyle = theme.footerBg || '#07090f';
+  ctx.fillRect(0, footerY, width, footerH);
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, footerY, width, 2);
+
+  ctx.font = isUrdu ? '700 20px "Noto Sans Arabic", sans-serif' : '700 20px "Inter", sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  const srcLabel = isUrdu ? `ذرائع: ${source}` : `SOURCE: ${source}`;
+  ctx.fillText(srcLabel, 35, footerY + footerH / 2);
+
+  ctx.font = '700 20px "Inter", sans-serif';
+  ctx.fillStyle = accent;
+  ctx.textAlign = 'right';
+  ctx.fillText(`Follow ${handle}`, width - 35, footerY + footerH / 2);
+}
+
+// ========================================================
+// 10. BBC BROADCAST LAYOUT (BBC World Service Style)
+// ========================================================
+function renderBBCBroadcastLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu) {
+  const accent = theme.accent || '#bb1919';
+  const bg = theme.bg || '#14171e';
+
+  // 1. Dark studio background
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, width, height);
+
+  // 2. Photo in top ~50%
+  const photoH = Math.floor(height * 0.50);
+  drawFittedPhoto(ctx, currentStudioState.loadedImg, 0, 0, width, photoH, currentStudioState.photoZoom / 100, currentStudioState.photoOffsetY);
+
+  if (currentStudioState.overlayDarkness > 0) {
+    ctx.fillStyle = `rgba(0, 0, 0, ${currentStudioState.overlayDarkness / 100})`;
+    ctx.fillRect(0, 0, width, photoH);
+  }
+
+  // Top gradient for header readability
+  const topGrad = ctx.createLinearGradient(0, 0, 0, 100);
+  topGrad.addColorStop(0, 'rgba(0, 0, 0, 0.8)');
+  topGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, width, 100);
+
+  // 3. Clean Header Bar
+  const headerH = 72;
+  ctx.fillStyle = 'rgba(20, 23, 30, 0.92)';
+  ctx.fillRect(0, 0, width, headerH);
+  // Red accent bar below header
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, headerH - 5, width, 5);
+
+  // Brand Name (left)
+  ctx.font = isUrduText(pageName)
+    ? '800 30px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+    : '900 34px "Montserrat", "Impact", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(pageName.toUpperCase(), 30, headerH / 2);
+
+  // LIVE Badge (Top-Right)
+  const liveW = 100;
+  const liveH = 42;
+  const liveX = width - liveW - 25;
+  const liveY = (headerH - liveH) / 2;
+  ctx.fillStyle = accent;
+  ctx.fillRect(liveX, liveY, liveW, liveH);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#ffffff';
+  ctx.strokeRect(liveX, liveY, liveW, liveH);
+  ctx.font = '700 19px "Inter", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔴 LIVE', liveX + liveW / 2, liveY + liveH / 2);
+
+  // 4. Bold red accent bar divider at photo bottom
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, photoH, width, 7);
+  // Shadow seam
+  const seamGrad = ctx.createLinearGradient(0, photoH + 7, 0, photoH + 22);
+  seamGrad.addColorStop(0, 'rgba(0, 0, 0, 0.6)');
+  seamGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = seamGrad;
+  ctx.fillRect(0, photoH + 7, width, 15);
+
+  // 5. Lower-third news box
+  const lowerY = photoH + 7;
+  const lowerH = height - lowerY;
+  const lowerGrad = ctx.createLinearGradient(0, lowerY, 0, height);
+  lowerGrad.addColorStop(0, '#1a1e28');
+  lowerGrad.addColorStop(1, bg);
+  ctx.fillStyle = lowerGrad;
+  ctx.fillRect(0, lowerY, width, lowerH);
+
+  // Category tag badge
+  ctx.font = isUrduText(categoryTag)
+    ? '800 24px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+    : '800 22px "Inter", sans-serif';
+  const catW = ctx.measureText(categoryTag).width + 36;
+  const catH = 44;
+  const catX = isUrdu ? width - catW - 35 : 35;
+  const catY = lowerY + 20;
+  ctx.fillStyle = accent;
+  ctx.fillRect(catX, catY, catW, catH);
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(categoryTag, catX + catW / 2, catY + catH / 2);
+
+  // Left red accent pillar
+  ctx.fillStyle = accent;
+  if (isUrdu) {
+    ctx.fillRect(width - 22, catY + catH + 16, 7, lowerH - catH - 110);
+  } else {
+    ctx.fillRect(15, catY + catH + 16, 7, lowerH - catH - 110);
+  }
+
+  // 6. Headline
+  const headlineFont = isUrdu
+    ? `800 ${fontSize}px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif`
+    : `900 ${fontSize}px "Impact", "Montserrat", sans-serif`;
+  ctx.font = headlineFont;
+
+  const maxTextW = width - 90;
+  const headlineLines = wrapText(ctx, title, maxTextW).slice(0, 3);
+  const lineH = Math.floor(fontSize * 1.55);
+
+  const fontSummary = isUrdu
+    ? '700 24px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+    : '600 22px "Inter", sans-serif';
+  ctx.font = fontSummary;
+  const summaryLines = summary ? wrapText(ctx, summary, maxTextW).slice(0, 2) : [];
+  const summaryLineH = 35;
+
+  const totalTextH = (headlineLines.length * lineH) + (summaryLines.length > 0 ? (summaryLines.length * summaryLineH + 18) : 0);
+  const availableH = height - (catY + catH) - 80;
+  let curY = (catY + catH) + Math.max(20, Math.floor((availableH - totalTextH) / 2)) + Math.floor(fontSize * 0.75);
+
+  ctx.font = headlineFont;
+  const align = currentStudioState.textAlign === 'auto' ? (isUrdu ? 'right' : 'left') : currentStudioState.textAlign;
+  ctx.textAlign = align;
+  let textX = 40;
+  if (align === 'center') textX = width / 2;
+  if (align === 'right') textX = width - 40;
+
+  const hlColor = currentStudioState.headlineColor || theme.headlineColor || '#ffffff';
+
+  headlineLines.forEach(line => {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.fillText(line, textX + 3, curY + 3);
+    ctx.fillStyle = hlColor;
+    ctx.fillText(line, textX, curY);
+    curY += lineH;
+  });
+
+  if (summaryLines.length > 0) {
+    curY += 10;
+    ctx.strokeStyle = 'rgba(187, 25, 25, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(35, curY - 12);
+    ctx.lineTo(width - 35, curY - 12);
+    ctx.stroke();
+
+    ctx.font = fontSummary;
+    summaryLines.forEach(sLine => {
+      ctx.fillStyle = 'rgba(220, 230, 240, 0.92)';
+      ctx.fillText(sLine, textX, curY);
+      curY += summaryLineH;
+    });
+  }
+
+  // 7. BBC-style Footer
+  const footerH = 62;
+  const footerY = height - footerH;
+  ctx.fillStyle = theme.footerBg || '#0b0d11';
+  ctx.fillRect(0, footerY, width, footerH);
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, footerY, width, 3);
+
+  ctx.font = isUrdu ? '700 22px "Noto Sans Arabic", sans-serif' : '700 22px "Inter", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  const srcLabel = isUrdu ? `ذرائع: ${source}` : `SOURCE: ${source}`;
+  ctx.fillText(srcLabel, 35, footerY + footerH / 2);
+
+  ctx.font = '700 22px "Inter", sans-serif';
+  ctx.fillStyle = accent;
+  ctx.textAlign = 'right';
+  ctx.fillText(`Follow ${handle}`, width - 35, footerY + footerH / 2);
+}
+
+// ========================================================
+// 11. GLASS PRISM LAYOUT (Glassmorphism Design)
+// ========================================================
+function renderGlassPrismLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu) {
+  const accent = theme.accent || '#c084fc';
+  const bg = theme.bg || '#06080e';
+
+  // 1. Dark background
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, width, height);
+
+  // 2. Full-bleed photo
+  const photoH = Math.floor(height * 0.55);
+  drawFittedPhoto(ctx, currentStudioState.loadedImg, 0, 0, width, photoH, currentStudioState.photoZoom / 100, currentStudioState.photoOffsetY);
+
+  if (currentStudioState.overlayDarkness > 0) {
+    ctx.fillStyle = `rgba(0, 0, 0, ${currentStudioState.overlayDarkness / 100})`;
+    ctx.fillRect(0, 0, width, photoH);
+  }
+
+  // Top vignette
+  const topGrad = ctx.createLinearGradient(0, 0, 0, 100);
+  topGrad.addColorStop(0, 'rgba(6, 8, 14, 0.7)');
+  topGrad.addColorStop(1, 'rgba(6, 8, 14, 0)');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, width, 100);
+
+  // 3. Frosted glass brand panel (Top-Left)
+  drawAdaptiveBrandPill(ctx, pageName, 25, 20, {
+    bg: 'rgba(6, 8, 14, 0.7)',
+    textColor: '#ffffff',
+    borderColor: 'rgba(192, 132, 252, 0.6)',
+    borderWidth: 2,
+    radius: 8,
+    fontSize: 24,
+    showIndicator: true,
+    indicatorColor: accent,
+    maxWidth: width - 180
+  });
+
+  // LIVE Badge (Top-Right) - translucent glass style
+  const liveW = 95;
+  const liveH = 40;
+  const liveX = width - liveW - 28;
+  const liveY = 28;
+  ctx.fillStyle = 'rgba(220, 38, 38, 0.85)';
+  ctx.fillRect(liveX, liveY, liveW, liveH);
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+  ctx.strokeRect(liveX, liveY, liveW, liveH);
+  ctx.font = '700 18px "Inter", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔴 LIVE', liveX + liveW / 2, liveY + liveH / 2);
+
+  // 4. Large frosted glass overlay panel on photo bottom half
+  const glassPanelMargin = 25;
+  const glassPanelTop = photoH - 130;
+  const glassPanelH = 130;
+  ctx.fillStyle = 'rgba(6, 8, 14, 0.5)';
+  ctx.fillRect(glassPanelMargin, glassPanelTop, width - glassPanelMargin * 2, glassPanelH);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = `rgba(192, 132, 252, 0.35)`;
+  ctx.strokeRect(glassPanelMargin, glassPanelTop, width - glassPanelMargin * 2, glassPanelH);
+
+  // Category tag inside glass panel
+  ctx.font = isUrduText(categoryTag)
+    ? '800 22px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+    : '800 20px "Inter", sans-serif';
+  const catW = ctx.measureText(categoryTag).width + 32;
+  const catH = 38;
+  const catX = isUrdu ? width - glassPanelMargin - catW - 15 : glassPanelMargin + 15;
+  const catY = glassPanelTop + 15;
+  ctx.fillStyle = accent;
+  ctx.fillRect(catX, catY, catW, catH);
+  ctx.fillStyle = '#000000';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(categoryTag, catX + catW / 2, catY + catH / 2);
+
+  // Source text inside glass panel
+  ctx.font = isUrdu ? '600 18px "Noto Sans Arabic", sans-serif' : '600 18px "Inter", sans-serif';
+  ctx.fillStyle = 'rgba(200, 210, 230, 0.8)';
+  ctx.textAlign = isUrdu ? 'right' : 'left';
+  const srcX = isUrdu ? width - glassPanelMargin - 20 : glassPanelMargin + 20;
+  const srcText = isUrdu ? `ذرائع: ${source}` : `SOURCE: ${source}`;
+  ctx.fillText(srcText, srcX, glassPanelTop + glassPanelH - 22);
+
+  // 5. Purple accent divider
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, photoH, width, 4);
+  // Purple glow beneath
+  const glowGrad = ctx.createLinearGradient(0, photoH + 4, 0, photoH + 25);
+  glowGrad.addColorStop(0, 'rgba(192, 132, 252, 0.4)');
+  glowGrad.addColorStop(1, 'rgba(192, 132, 252, 0)');
+  ctx.fillStyle = glowGrad;
+  ctx.fillRect(0, photoH + 4, width, 21);
+
+  // 6. Lower half: dark gradient
+  const lowerGrad = ctx.createLinearGradient(0, photoH + 4, 0, height);
+  lowerGrad.addColorStop(0, '#0a0e1a');
+  lowerGrad.addColorStop(1, bg);
+  ctx.fillStyle = lowerGrad;
+  ctx.fillRect(0, photoH + 4, width, height - photoH - 4);
+
+  // Accent side pillar
+  ctx.fillStyle = accent;
+  if (isUrdu) {
+    ctx.fillRect(width - 20, photoH + 30, 6, height - photoH - 110);
+  } else {
+    ctx.fillRect(14, photoH + 30, 6, height - photoH - 110);
+  }
+
+  // 7. Headline
+  const headlineFont = isUrdu
+    ? `800 ${fontSize}px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif`
+    : `900 ${fontSize}px "Impact", "Montserrat", sans-serif`;
+  ctx.font = headlineFont;
+
+  const maxTextW = width - 90;
+  const headlineLines = wrapText(ctx, title, maxTextW).slice(0, 3);
+  const lineH = Math.floor(fontSize * 1.55);
+
+  const fontSummary = isUrdu
+    ? '700 24px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+    : '600 22px "Inter", sans-serif';
+  ctx.font = fontSummary;
+  const summaryLines = summary ? wrapText(ctx, summary, maxTextW).slice(0, 2) : [];
+  const summaryLineH = 34;
+
+  const totalTextH = (headlineLines.length * lineH) + (summaryLines.length > 0 ? (summaryLines.length * summaryLineH + 18) : 0);
+  const availableH = height - photoH - 80;
+  let curY = photoH + Math.max(25, Math.floor((availableH - totalTextH) / 2)) + Math.floor(fontSize * 0.75);
+
+  ctx.font = headlineFont;
+  const align = currentStudioState.textAlign === 'auto' ? (isUrdu ? 'right' : 'left') : currentStudioState.textAlign;
+  ctx.textAlign = align;
+  let textX = 40;
+  if (align === 'center') textX = width / 2;
+  if (align === 'right') textX = width - 40;
+
+  const hlColor = currentStudioState.headlineColor || theme.headlineColor || '#ffffff';
+
+  headlineLines.forEach(line => {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.fillText(line, textX + 3, curY + 3);
+    ctx.fillStyle = hlColor;
+    ctx.fillText(line, textX, curY);
+    curY += lineH;
+  });
+
+  if (summaryLines.length > 0) {
+    curY += 10;
+    ctx.strokeStyle = 'rgba(192, 132, 252, 0.25)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(35, curY - 12);
+    ctx.lineTo(width - 35, curY - 12);
+    ctx.stroke();
+
+    ctx.font = fontSummary;
+    summaryLines.forEach(sLine => {
+      ctx.fillStyle = 'rgba(210, 220, 240, 0.92)';
+      ctx.fillText(sLine, textX, curY);
+      curY += summaryLineH;
+    });
+  }
+
+  // 8. Footer
+  const footerH = 58;
+  const footerY = height - footerH;
+  ctx.fillStyle = theme.footerBg || '#0f172a';
+  ctx.fillRect(0, footerY, width, footerH);
+  ctx.fillStyle = accent;
+  ctx.fillRect(0, footerY, width, 2);
+
+  ctx.font = isUrdu ? '700 20px "Noto Sans Arabic", sans-serif' : '700 20px "Inter", sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  const footerSrcLabel = isUrdu ? `✦ ذرائع: ${source}` : `✦ SOURCE: ${source}`;
+  ctx.fillText(footerSrcLabel, 35, footerY + footerH / 2);
+
+  ctx.font = '700 20px "Inter", sans-serif';
+  ctx.fillStyle = accent;
+  ctx.textAlign = 'right';
+  ctx.fillText(`Follow ${handle}`, width - 35, footerY + footerH / 2);
+}
+
+// ========================================================
+// 12. AURORA EMERALD LAYOUT (Pakistan Green + Gold Prestige)
+// ========================================================
+function renderAuroraEmeraldLayout(theme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu) {
+  const gold = theme.accent || '#ffd700';
+  const goldLight = '#fff2a3';
+  const bgDark = theme.bg || '#012010';
+
+  // 1. Rich dark emerald gradient background
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
+  bgGrad.addColorStop(0, '#013a1a');
+  bgGrad.addColorStop(0.5, bgDark);
+  bgGrad.addColorStop(1, '#000e06');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, width, height);
+
+  // 2. Photo in top ~52%
+  const photoH = Math.floor(height * 0.52);
+  const photoMargin = 0;
+  drawFittedPhoto(ctx, currentStudioState.loadedImg, photoMargin, 0, width - photoMargin * 2, photoH, currentStudioState.photoZoom / 100, currentStudioState.photoOffsetY);
+
+  if (currentStudioState.overlayDarkness > 0) {
+    ctx.fillStyle = `rgba(0, 0, 0, ${currentStudioState.overlayDarkness / 100})`;
+    ctx.fillRect(photoMargin, 0, width - photoMargin * 2, photoH);
+  }
+
+  // Gold ornamental border around photo
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = gold;
+  ctx.strokeRect(8, 8, width - 16, photoH - 8);
+  // Inner thin border
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+  ctx.strokeRect(14, 14, width - 28, photoH - 20);
+
+  // Top gradient for header readability
+  const topGrad = ctx.createLinearGradient(0, 0, 0, 100);
+  topGrad.addColorStop(0, 'rgba(1, 32, 16, 0.85)');
+  topGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(0, 0, width, 100);
+
+  // 3. Gold Crest Brand Pill (Top-Left)
+  drawAdaptiveBrandPill(ctx, pageName, 22, 18, {
+    bg: '#012a10',
+    textColor: goldLight,
+    borderColor: gold,
+    borderWidth: 3,
+    radius: 8,
+    fontSize: 24,
+    showIndicator: true,
+    indicatorColor: gold,
+    maxWidth: width - 180
+  });
+
+  // LIVE Badge (Top-Right) gold-green style
+  const liveW = 105;
+  const liveH = 44;
+  const liveX = width - liveW - 22;
+  const liveY = 22;
+  ctx.fillStyle = '#014d20';
+  ctx.fillRect(liveX, liveY, liveW, liveH);
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = gold;
+  ctx.strokeRect(liveX, liveY, liveW, liveH);
+  ctx.font = '800 20px "Inter", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.fillText('🔴 LIVE', liveX + liveW / 2, liveY + liveH / 2);
+
+  // 4. Dual gold ribbon divider with center ornament
+  ctx.fillStyle = gold;
+  ctx.fillRect(0, photoH, width, 6);
+  ctx.fillStyle = '#997a00';
+  ctx.fillRect(0, photoH + 6, width, 2);
+
+  // Center Star Ornament
+  const midX = width / 2;
+  ctx.save();
+  ctx.translate(midX, photoH + 4);
+  ctx.rotate(Math.PI / 4);
+  ctx.fillStyle = gold;
+  ctx.fillRect(-14, -14, 28, 28);
+  ctx.fillStyle = '#012010';
+  ctx.fillRect(-9, -9, 18, 18);
+  ctx.fillStyle = gold;
+  ctx.fillRect(-4, -4, 8, 8);
+  ctx.restore();
+
+  // 5. Lower half: rich emerald gradient
+  const lowerGrad = ctx.createLinearGradient(0, photoH + 8, 0, height);
+  lowerGrad.addColorStop(0, '#013a1a');
+  lowerGrad.addColorStop(0.5, bgDark);
+  lowerGrad.addColorStop(1, '#000e06');
+  ctx.fillStyle = lowerGrad;
+  ctx.fillRect(0, photoH + 8, width, height - photoH - 8);
+
+  // Category Badge in Gold
+  ctx.font = isUrduText(categoryTag)
+    ? '800 26px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+    : '800 24px "Montserrat", "Impact", sans-serif';
+  const catTagW = ctx.measureText(categoryTag).width + 42;
+  const catTagH = 46;
+  const catTagX = isUrdu ? width - catTagW - 40 : 40;
+  const catTagY = photoH + 24;
+
+  ctx.fillStyle = gold;
+  ctx.fillRect(catTagX, catTagY, catTagW, catTagH);
+  ctx.fillStyle = '#012010';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(categoryTag, catTagX + catTagW / 2, catTagY + catTagH / 2);
+
+  // Gold side accent bar
+  ctx.fillStyle = gold;
+  if (isUrdu) {
+    ctx.fillRect(width - 22, catTagY + catTagH + 18, 6, height - (catTagY + catTagH) - 100);
+  } else {
+    ctx.fillRect(16, catTagY + catTagH + 18, 6, height - (catTagY + catTagH) - 100);
+  }
+
+  // 6. Headline
+  const headlineFont = isUrdu
+    ? `800 ${fontSize}px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif`
+    : `900 ${fontSize}px "Impact", "Montserrat", sans-serif`;
+  ctx.font = headlineFont;
+
+  const maxTextW = width - 100;
+  const headlineLines = wrapText(ctx, title, maxTextW).slice(0, 3);
+  const lineH = Math.floor(fontSize * 1.55);
+
+  const fontSummary = isUrdu
+    ? '700 25px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+    : '600 23px "Inter", sans-serif';
+  ctx.font = fontSummary;
+  const summaryLines = summary ? wrapText(ctx, summary, maxTextW).slice(0, 2) : [];
+  const summaryLineH = 36;
+
+  const totalTextH = (headlineLines.length * lineH) + (summaryLines.length > 0 ? (summaryLines.length * summaryLineH + 20) : 0);
+  const availableH = height - (catTagY + catTagH) - 80;
+  let curY = (catTagY + catTagH) + Math.max(20, Math.floor((availableH - totalTextH) / 2)) + Math.floor(fontSize * 0.75);
+
+  ctx.font = headlineFont;
+  const align = currentStudioState.textAlign === 'auto' ? (isUrdu ? 'right' : 'left') : currentStudioState.textAlign;
+  ctx.textAlign = align;
+  let textX = 45;
+  if (align === 'center') textX = width / 2;
+  if (align === 'right') textX = width - 45;
+
+  const hlColor = currentStudioState.headlineColor || theme.headlineColor || gold;
+
+  headlineLines.forEach(line => {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.95)';
+    ctx.fillText(line, textX + 3, curY + 3);
+    ctx.fillStyle = hlColor;
+    ctx.fillText(line, textX, curY);
+    curY += lineH;
+  });
+
+  if (summaryLines.length > 0) {
+    curY += 10;
+    ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(45, curY - 14);
+    ctx.lineTo(width - 45, curY - 14);
+    ctx.stroke();
+
+    ctx.font = fontSummary;
+    summaryLines.forEach(sLine => {
+      ctx.fillStyle = 'rgba(255, 245, 230, 0.95)';
+      ctx.fillText(sLine, textX, curY);
+      curY += summaryLineH;
+    });
+  }
+
+  // 7. Royal Gold Footer
+  const footerH = 65;
+  const footerY = height - footerH;
+  ctx.fillStyle = theme.footerBg || '#001207';
+  ctx.fillRect(0, footerY, width, footerH);
+  ctx.fillStyle = gold;
+  ctx.fillRect(0, footerY, width, 3);
+
+  ctx.font = isUrdu ? '700 22px "Noto Sans Arabic", sans-serif' : '700 22px "Inter", sans-serif';
+  ctx.fillStyle = goldLight;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  const srcLabel = isUrdu ? `🌙 ذرائع: ${source}` : `🌙 SOURCE: ${source}`;
+  ctx.fillText(srcLabel, 35, footerY + footerH / 2);
+
+  ctx.font = '700 24px "Inter", sans-serif';
+  ctx.fillStyle = gold;
+  ctx.textAlign = 'right';
+  ctx.fillText(`Follow ${handle}`, width - 35, footerY + footerH / 2);
+}
+
+// ========================================================
+// 13. CUSTOM USER LAYOUT (Generic Template for User-Created Themes)
+// ========================================================
+function renderCustomUserLayout(customTheme, width, height, pageName, categoryTag, title, summary, source, handle, fontSize, isUrdu) {
+  const bgColor = customTheme.bgColor || '#0a0d14';
+  const accentColor = customTheme.accentColor || '#00f0ff';
+  const headlineClr = customTheme.headlineColor || '#ffffff';
+  const photoPosition = customTheme.photoPosition || 'top';   // 'top', 'left', 'bottom'
+  const photoSize = Math.max(0.3, Math.min(0.7, customTheme.photoSize || 0.5));
+  const showBadge = customTheme.showBadge !== false;
+  const badgeStyle = customTheme.badgeStyle || 'pill';  // 'pill', 'rect', 'minimal'
+  const fontStyle = customTheme.fontStyle || 'impact';  // 'impact', 'inter', 'serif'
+
+  // 1. Background
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, width, height);
+
+  // Determine photo and content regions based on photoPosition
+  let photoX = 0, photoY = 0, photoW = width, photoH;
+  let contentX = 0, contentY, contentW = width, contentH;
+
+  if (photoPosition === 'left') {
+    photoW = Math.floor(width * photoSize);
+    photoH = height;
+    photoX = 0;
+    photoY = 0;
+    contentX = photoW;
+    contentY = 0;
+    contentW = width - photoW;
+    contentH = height;
+  } else if (photoPosition === 'bottom') {
+    photoH = Math.floor(height * photoSize);
+    photoY = height - photoH;
+    contentY = 0;
+    contentH = height - photoH;
+  } else {
+    // 'top' (default)
+    photoH = Math.floor(height * photoSize);
+    photoY = 0;
+    contentY = photoH;
+    contentH = height - photoH;
+  }
+
+  // 2. Photo
+  drawFittedPhoto(ctx, currentStudioState.loadedImg, photoX, photoY, photoW, photoH, currentStudioState.photoZoom / 100, currentStudioState.photoOffsetY);
+
+  if (currentStudioState.overlayDarkness > 0) {
+    ctx.fillStyle = `rgba(0, 0, 0, ${currentStudioState.overlayDarkness / 100})`;
+    ctx.fillRect(photoX, photoY, photoW, photoH);
+  }
+
+  // 3. Content area fill
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(contentX, contentY, contentW, contentH);
+
+  // Accent divider between photo and content
+  if (photoPosition === 'left') {
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(photoW - 2, 0, 5, height);
+  } else if (photoPosition === 'bottom') {
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(0, photoY - 4, width, 5);
+  } else {
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(0, photoH - 1, width, 5);
+  }
+
+  // 4. Brand Pill on photo
+  if (showBadge) {
+    const pillX = photoX + 25;
+    const pillY = photoY + 20;
+    if (badgeStyle === 'rect') {
+      const pw = Math.max(200, ctx.measureText(pageName).width + 50);
+      const ph = 50;
+      ctx.fillStyle = accentColor;
+      ctx.fillRect(pillX, pillY, pw, ph);
+      ctx.font = isUrduText(pageName)
+        ? '800 22px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+        : '900 24px "Montserrat", "Impact", sans-serif';
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pageName.toUpperCase(), pillX + pw / 2, pillY + ph / 2);
+    } else if (badgeStyle === 'minimal') {
+      ctx.font = isUrduText(pageName)
+        ? '800 28px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+        : '900 30px "Montserrat", "Impact", sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.shadowColor = 'rgba(0,0,0,0.7)';
+      ctx.shadowBlur = 8;
+      ctx.fillText(pageName.toUpperCase(), pillX, pillY);
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+    } else {
+      // 'pill' default
+      drawAdaptiveBrandPill(ctx, pageName, pillX, pillY, {
+        bg: 'rgba(0, 0, 0, 0.75)',
+        textColor: '#ffffff',
+        borderColor: accentColor,
+        borderWidth: 2,
+        radius: 10,
+        fontSize: 22,
+        showIndicator: true,
+        indicatorColor: accentColor,
+        maxWidth: (photoW || width) - 100
+      });
+    }
+  }
+
+  // LIVE badge on photo top-right
+  const liveBadgeX = photoX + photoW - 115;
+  const liveBadgeY = photoY + 22;
+  ctx.fillStyle = '#e50914';
+  ctx.fillRect(liveBadgeX, liveBadgeY, 90, 38);
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = '#ffffff';
+  ctx.strokeRect(liveBadgeX, liveBadgeY, 90, 38);
+  ctx.font = '700 18px "Inter", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('LIVE', liveBadgeX + 45, liveBadgeY + 19);
+
+  // 5. Category Tag
+  ctx.font = isUrduText(categoryTag)
+    ? '800 22px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+    : '800 20px "Inter", sans-serif';
+  const catW = ctx.measureText(categoryTag).width + 32;
+  const catH = 40;
+  const catX = isUrdu ? (contentX + contentW - catW - 25) : (contentX + 25);
+  const catY = contentY + 18;
+  ctx.fillStyle = accentColor;
+  ctx.fillRect(catX, catY, catW, catH);
+  ctx.fillStyle = '#000000';
+  ctx.textAlign = 'center';
+  ctx.fillText(categoryTag, catX + catW / 2, catY + catH / 2);
+
+  // 6. Headline
+  // Choose font family based on fontStyle
+  let engFontFamily = '"Impact", "Montserrat", sans-serif';
+  if (fontStyle === 'inter') engFontFamily = '"Inter", sans-serif';
+  if (fontStyle === 'serif') engFontFamily = '"Georgia", serif';
+
+  const headlineFont = isUrdu
+    ? `800 ${fontSize}px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif`
+    : `900 ${fontSize}px ${engFontFamily}`;
+  ctx.font = headlineFont;
+
+  const textPad = 30;
+  const maxTextW = contentW - textPad * 2 - 10;
+  const headlineLines = wrapText(ctx, title, maxTextW).slice(0, 3);
+  const lineH = Math.floor(fontSize * 1.55);
+
+  const sumFontFamily = isUrdu
+    ? '700 24px "Noto Sans Arabic", "Noto Nastaliq Urdu", sans-serif'
+    : '600 22px "Inter", sans-serif';
+  ctx.font = sumFontFamily;
+  const summaryLines = summary ? wrapText(ctx, summary, maxTextW).slice(0, 2) : [];
+  const summaryLineH = 34;
+
+  const totalTextH = (headlineLines.length * lineH) + (summaryLines.length > 0 ? (summaryLines.length * summaryLineH + 18) : 0);
+  const textAreaTop = catY + catH + 10;
+  const textAreaH = contentY + contentH - textAreaTop - 70;
+  let curY = textAreaTop + Math.max(15, Math.floor((textAreaH - totalTextH) / 2)) + Math.floor(fontSize * 0.75);
+
+  ctx.font = headlineFont;
+  const align = currentStudioState.textAlign === 'auto' ? (isUrdu ? 'right' : 'left') : currentStudioState.textAlign;
+  ctx.textAlign = align;
+  let textX = contentX + textPad;
+  if (align === 'center') textX = contentX + contentW / 2;
+  if (align === 'right') textX = contentX + contentW - textPad;
+
+  const hlColor = currentStudioState.headlineColor || headlineClr;
+
+  headlineLines.forEach(line => {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.fillText(line, textX + 3, curY + 3);
+    ctx.fillStyle = hlColor;
+    ctx.fillText(line, textX, curY);
+    curY += lineH;
+  });
+
+  if (summaryLines.length > 0) {
+    curY += 10;
+    ctx.strokeStyle = `${accentColor}40`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(contentX + textPad, curY - 12);
+    ctx.lineTo(contentX + contentW - textPad, curY - 12);
+    ctx.stroke();
+
+    ctx.font = sumFontFamily;
+    summaryLines.forEach(sLine => {
+      ctx.fillStyle = 'rgba(210, 220, 235, 0.92)';
+      ctx.fillText(sLine, textX, curY);
+      curY += summaryLineH;
+    });
+  }
+
+  // 7. Footer
+  const footerH = 58;
+  const footerY = height - footerH;
+  // Darken footer area
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+  ctx.fillRect(0, footerY, width, footerH);
+  ctx.fillStyle = accentColor;
+  ctx.fillRect(0, footerY, width, 2);
+
+  ctx.font = isUrdu ? '700 20px "Noto Sans Arabic", sans-serif' : '700 20px "Inter", sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  const srcLabel = isUrdu ? `ذرائع: ${source}` : `SOURCE: ${source}`;
+  ctx.fillText(srcLabel, 35, footerY + footerH / 2);
+
+  ctx.font = '700 20px "Inter", sans-serif';
+  ctx.fillStyle = accentColor;
+  ctx.textAlign = 'right';
+  ctx.fillText(`Follow ${handle}`, width - 35, footerY + footerH / 2);
+}
+
 function downloadCurrentCanvas() {
   if (!canvas) return;
   const link = document.createElement('a');
@@ -1850,4 +2833,320 @@ function downloadCurrentCanvas() {
   link.href = canvas.toDataURL('image/png', 0.96);
   link.click();
   showToast('Graphic Downloaded', 'High-res news card PNG saved to your downloads folder!');
+}
+
+
+// ========================================================
+// TEMPLATE BUILDER — CREATE CUSTOM TEMPLATES
+// ========================================================
+
+let tbPreviewCanvas = null;
+let tbPreviewCtx = null;
+let tbReferenceImage = null;
+
+function initTemplateBuilder() {
+  tbPreviewCanvas = document.getElementById('templatePreviewCanvas');
+  if (tbPreviewCanvas) {
+    tbPreviewCtx = tbPreviewCanvas.getContext('2d');
+    updateTemplatePreview();
+  }
+}
+
+// Initialize when modal opens
+document.addEventListener('DOMContentLoaded', () => {
+  const tbModal = document.getElementById('templateBuilderModal');
+  if (tbModal) {
+    tbModal.addEventListener('shown.bs.modal', () => {
+      initTemplateBuilder();
+    });
+  }
+  // Load saved custom template buttons on page load
+  setTimeout(loadSavedCustomTemplateButtons, 500);
+});
+
+function handleTBImageUpload(fileInput) {
+  if (!fileInput.files || !fileInput.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      tbReferenceImage = img;
+      const previewDiv = document.getElementById('tbImagePreview');
+      const previewImg = document.getElementById('tbImagePreviewImg');
+      if (previewDiv) previewDiv.classList.remove('d-none');
+      if (previewImg) previewImg.src = e.target.result;
+
+      // Auto-extract dominant color from image for accent
+      try {
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = 1;
+        tmpCanvas.height = 1;
+        const tmpCtx = tmpCanvas.getContext('2d');
+        tmpCtx.drawImage(img, 0, 0, 1, 1);
+        const pixel = tmpCtx.getImageData(0, 0, 1, 1).data;
+        const hex = '#' + [pixel[0], pixel[1], pixel[2]].map(v => v.toString(16).padStart(2, '0')).join('');
+        // Set the accent to a brightened version
+        document.getElementById('tbAccentColor').value = hex;
+        document.getElementById('tbAccentColorHex').value = hex;
+      } catch (e) { /* CORS or other error - skip */ }
+
+      updateTemplatePreview();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(fileInput.files[0]);
+}
+
+function updateTemplatePreview() {
+  if (!tbPreviewCanvas || !tbPreviewCtx) {
+    initTemplateBuilder();
+    if (!tbPreviewCanvas || !tbPreviewCtx) return;
+  }
+
+  const w = tbPreviewCanvas.width;
+  const h = tbPreviewCanvas.height;
+  const pCtx = tbPreviewCtx;
+
+  const bgColor = document.getElementById('tbBgColor')?.value || '#0a0d14';
+  const accentColor = document.getElementById('tbAccentColor')?.value || '#ff1e38';
+  const headlineColor = document.getElementById('tbHeadlineColor')?.value || '#ffffff';
+  const footerBgColor = document.getElementById('tbFooterBgColor')?.value || '#080a0f';
+  const photoPosition = document.getElementById('tbPhotoPosition')?.value || 'top';
+  const photoSize = parseInt(document.getElementById('tbPhotoSize')?.value || 50) / 100;
+  const badgeStyle = document.getElementById('tbBadgeStyle')?.value || 'pill';
+  const showBadge = document.getElementById('tbShowBadge')?.checked !== false;
+
+  // Clear
+  pCtx.fillStyle = bgColor;
+  pCtx.fillRect(0, 0, w, h);
+
+  // Photo region
+  let photoX = 0, photoY = 0, photoW = w, photoH = Math.floor(h * photoSize);
+  let contentX = 0, contentY = photoH, contentW = w, contentH = h - photoH;
+
+  if (photoPosition === 'left') {
+    photoW = Math.floor(w * photoSize);
+    photoH = h;
+    contentX = photoW;
+    contentY = 0;
+    contentW = w - photoW;
+    contentH = h;
+  } else if (photoPosition === 'bottom') {
+    contentY = 0;
+    contentH = Math.floor(h * (1 - photoSize));
+    photoY = contentH;
+    photoH = h - contentH;
+  }
+
+  // Draw photo area
+  if (tbReferenceImage) {
+    pCtx.save();
+    pCtx.beginPath();
+    pCtx.rect(photoX, photoY, photoW, photoH);
+    pCtx.clip();
+    const imgRatio = tbReferenceImage.width / tbReferenceImage.height;
+    const regionRatio = photoW / photoH;
+    let rW, rH, cX, cY;
+    if (imgRatio > regionRatio) {
+      rH = photoH; rW = photoH * imgRatio; cX = (rW - photoW) / 2; cY = 0;
+    } else {
+      rW = photoW; rH = photoW / imgRatio; cX = 0; cY = (rH - photoH) / 2;
+    }
+    pCtx.drawImage(tbReferenceImage, photoX - cX, photoY - cY, rW, rH);
+    pCtx.restore();
+  } else {
+    // Placeholder gradient
+    const grad = pCtx.createLinearGradient(photoX, photoY, photoX + photoW, photoY + photoH);
+    grad.addColorStop(0, '#1a1d2e');
+    grad.addColorStop(1, '#2a3040');
+    pCtx.fillStyle = grad;
+    pCtx.fillRect(photoX, photoY, photoW, photoH);
+    pCtx.font = '700 16px "Inter", sans-serif';
+    pCtx.fillStyle = 'rgba(255,255,255,0.3)';
+    pCtx.textAlign = 'center';
+    pCtx.textBaseline = 'middle';
+    pCtx.fillText('📷 Photo Area', photoX + photoW / 2, photoY + photoH / 2);
+  }
+
+  // Accent divider
+  pCtx.fillStyle = accentColor;
+  if (photoPosition === 'left') {
+    pCtx.fillRect(photoW - 1, 0, 3, h);
+  } else if (photoPosition === 'bottom') {
+    pCtx.fillRect(0, contentH - 1, w, 3);
+  } else {
+    pCtx.fillRect(0, photoH - 1, w, 3);
+  }
+
+  // Content area bg
+  pCtx.fillStyle = bgColor;
+  pCtx.fillRect(contentX, contentY, contentW, contentH);
+
+  // Brand pill
+  if (showBadge) {
+    const pillText = 'PAGE NAME';
+    pCtx.font = '800 11px "Inter", sans-serif';
+    const tw = pCtx.measureText(pillText).width;
+    const pillW = tw + 18;
+    const pillH = 22;
+    const pillX = photoX + 8;
+    const pillY = photoY + 8;
+
+    if (badgeStyle === 'pill') {
+      pCtx.fillStyle = accentColor;
+      if (pCtx.roundRect) {
+        pCtx.beginPath();
+        pCtx.roundRect(pillX, pillY, pillW, pillH, 6);
+        pCtx.fill();
+      } else {
+        pCtx.fillRect(pillX, pillY, pillW, pillH);
+      }
+    } else if (badgeStyle === 'rect') {
+      pCtx.fillStyle = accentColor;
+      pCtx.fillRect(pillX, pillY, pillW, pillH);
+    } else {
+      // minimal: text only with shadow
+    }
+    pCtx.fillStyle = '#ffffff';
+    pCtx.textAlign = 'center';
+    pCtx.textBaseline = 'middle';
+    pCtx.fillText(pillText, pillX + pillW / 2, pillY + pillH / 2);
+  }
+
+  // LIVE badge
+  const liveW = 40;
+  const liveH = 18;
+  const liveX = photoX + photoW - liveW - 8;
+  const liveY = photoY + 8;
+  pCtx.fillStyle = '#ff0000';
+  pCtx.fillRect(liveX, liveY, liveW, liveH);
+  pCtx.font = '700 10px "Inter", sans-serif';
+  pCtx.fillStyle = '#ffffff';
+  pCtx.textAlign = 'center';
+  pCtx.textBaseline = 'middle';
+  pCtx.fillText('LIVE', liveX + liveW / 2, liveY + liveH / 2);
+
+  // Headline
+  pCtx.font = '800 18px "Inter", sans-serif';
+  pCtx.fillStyle = headlineColor;
+  pCtx.textAlign = 'center';
+  pCtx.textBaseline = 'middle';
+  const headlineY = contentY + contentH * 0.35;
+  pCtx.fillText('بریکنگ نیوز ہیڈ لائن', contentX + contentW / 2, headlineY);
+  pCtx.font = '600 12px "Inter", sans-serif';
+  pCtx.fillStyle = 'rgba(255,255,255,0.7)';
+  pCtx.fillText('Summary text details here...', contentX + contentW / 2, headlineY + 28);
+
+  // Footer
+  const footerH = Math.floor(contentH * 0.18);
+  const footerY = contentY + contentH - footerH;
+  pCtx.fillStyle = footerBgColor;
+  pCtx.fillRect(contentX, footerY, contentW, footerH);
+  pCtx.fillStyle = accentColor;
+  pCtx.fillRect(contentX, footerY, contentW, 2);
+
+  pCtx.font = '600 10px "Inter", sans-serif';
+  pCtx.fillStyle = 'rgba(255,255,255,0.6)';
+  pCtx.textAlign = 'center';
+  pCtx.fillText('SOURCE: NEWS DESK  |  @handle', contentX + contentW / 2, footerY + footerH / 2 + 2);
+}
+
+function saveCustomTemplate() {
+  const name = document.getElementById('tbTemplateName')?.value?.trim() || 'My Template';
+  const key = 'custom_' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/_+/g, '_');
+
+  const customTheme = {
+    name: name,
+    bgColor: document.getElementById('tbBgColor')?.value || '#0a0d14',
+    accentColor: document.getElementById('tbAccentColor')?.value || '#ff1e38',
+    headlineColor: document.getElementById('tbHeadlineColor')?.value || '#ffffff',
+    footerBg: document.getElementById('tbFooterBgColor')?.value || '#080a0f',
+    photoPosition: document.getElementById('tbPhotoPosition')?.value || 'top',
+    photoSize: parseInt(document.getElementById('tbPhotoSize')?.value || 50) / 100,
+    showBadge: document.getElementById('tbShowBadge')?.checked !== false,
+    badgeStyle: document.getElementById('tbBadgeStyle')?.value || 'pill',
+    fontStyle: document.getElementById('tbFontStyle')?.value || 'impact'
+  };
+
+  USER_CUSTOM_THEMES[key] = customTheme;
+
+  // Persist to localStorage
+  try {
+    localStorage.setItem('viralnews_custom_themes', JSON.stringify(USER_CUSTOM_THEMES));
+  } catch (e) {
+    console.warn('Could not save custom themes:', e);
+  }
+
+  // Add button to the UI
+  loadSavedCustomTemplateButtons();
+
+  showToast('Template Saved!', `"${name}" has been saved. You can now use it in the studio.`);
+  return key;
+}
+
+function saveAndUseCustomTemplate() {
+  const key = saveCustomTemplate();
+  if (key) {
+    setStudioTheme(key);
+    const modal = bootstrap.Modal.getInstance(document.getElementById('templateBuilderModal'));
+    if (modal) modal.hide();
+    showToast('Template Active', 'Your custom template is now active in the studio!');
+  }
+}
+
+function deleteCustomTemplate(key) {
+  if (!confirm('Delete this custom template? This cannot be undone.')) return;
+  delete USER_CUSTOM_THEMES[key];
+  try {
+    localStorage.setItem('viralnews_custom_themes', JSON.stringify(USER_CUSTOM_THEMES));
+  } catch (e) { /* ignore */ }
+
+  loadSavedCustomTemplateButtons();
+  
+  // If currently using this template, switch to default
+  if (currentStudioState.theme === key) {
+    setStudioTheme('turkiye_urdu_split');
+  }
+  showToast('Template Deleted', 'Custom template removed.');
+}
+
+function loadSavedCustomTemplateButtons() {
+  const section = document.getElementById('customTemplatesSection');
+  const container = document.getElementById('customTemplateButtons');
+  if (!section || !container) return;
+
+  const keys = Object.keys(USER_CUSTOM_THEMES);
+  if (keys.length === 0) {
+    section.classList.add('d-none');
+    return;
+  }
+
+  section.classList.remove('d-none');
+  container.innerHTML = keys.map(key => {
+    const t = USER_CUSTOM_THEMES[key];
+    const isActive = currentStudioState.theme === key;
+    return `
+      <div class="d-flex align-items-center gap-1 mb-1">
+        <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2 flex-grow-1 ${isActive ? 'active' : ''}" data-theme="${key}" onclick="setStudioTheme('${key}')">
+          <span class="color-dot" style="background:${t.accentColor || '#ff1e38'};box-shadow:0 0 6px ${t.accentColor || '#ff1e38'};"></span>
+          🎨 ${t.name || key}
+          ${isActive ? '<span class="badge bg-info text-dark ms-auto py-1 px-1">✓</span>' : ''}
+        </button>
+        <button class="btn btn-xs btn-outline-danger px-1 py-0" onclick="deleteCustomTemplate('${key}')" title="Delete">
+          <i class="fa-solid fa-trash-can" style="font-size:10px;"></i>
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+// Upload custom photo from studio's file input
+function uploadCustomStudioImage(fileInput) {
+  if (!fileInput.files || !fileInput.files[0]) return;
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    loadStudioImage(e.target.result);
+  };
+  reader.readAsDataURL(file);
 }

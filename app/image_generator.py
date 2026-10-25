@@ -142,10 +142,16 @@ def generate_news_card(article, options=None):
             grad = Image.new("RGBA", (width, split_y), (30, 35, 45, 255))
             card.paste(grad, (0, 0))
 
-        # Top-left Logo Box (White/Red box like Turkiye Urdu)
+        # Top-left Logo Box - Adaptive Pill (expands with text, no overflow/crossing)
         draw = ImageDraw.Draw(card)
-        logo_box_w = 180
-        logo_box_h = 75
+        font_logo = get_font(size=24, is_urdu=is_urdu_str(page_name))
+        display_page_name = shape_urdu(page_name)
+        text_bbox = font_logo.getbbox(display_page_name)
+        text_w = text_bbox[2] - text_bbox[0]
+        text_h = text_bbox[3] - text_bbox[1]
+        
+        logo_box_w = max(text_w + 48, 180)
+        logo_box_h = 56
         if theme_key == "neon_cyber_split":
             logo_bg = (0, 240, 255)
         elif theme_key == "royal_gold_split":
@@ -157,12 +163,13 @@ def generate_news_card(article, options=None):
         elif theme_key == "turkiye_emerald_split":
             logo_bg = (0, 120, 50)
         else:
-            logo_bg = (220, 20, 40)
-        draw.rectangle([(25, 25), (25 + logo_box_w, 25 + logo_box_h)], fill=(255, 255, 255), outline=logo_bg, width=3)
-        draw.rectangle([(30, 30), (25 + logo_box_w - 5, 25 + logo_box_h - 5)], fill=logo_bg)
-        font_logo = get_font(size=26, is_urdu=is_urdu_str(page_name))
+            logo_bg = (165, 0, 10)
+        
+        draw.rounded_rectangle([(25, 25), (25 + logo_box_w, 25 + logo_box_h)], radius=10, fill=logo_bg, outline=(255, 255, 255), width=2)
         logo_text_color = (0, 0, 0) if theme_key in ["neon_cyber_split", "royal_gold_split", "vox_spotlight_dark"] else (255, 255, 255)
-        draw.text((36, 42), shape_urdu(page_name[:14]), font=font_logo, fill=logo_text_color)
+        text_x = 25 + (logo_box_w - text_w) // 2
+        text_y = 25 + (logo_box_h - text_h) // 2 - 2
+        draw.text((text_x, text_y), display_page_name, font=font_logo, fill=logo_text_color)
 
         # 2. Bottom Half: Theme Background
         if theme_key == "turkiye_emerald_split":

@@ -182,6 +182,27 @@ function applySettingsToUI(settings) {
   if (settings.autopilot_max_posts && document.getElementById('autoPilotMaxPosts')) {
     document.getElementById('autoPilotMaxPosts').value = settings.autopilot_max_posts;
   }
+  if (settings.autopilot_theme && document.getElementById('autoPilotTheme')) {
+    document.getElementById('autoPilotTheme').value = settings.autopilot_theme;
+  }
+  if (settings.autopilot_language && document.getElementById('autoPilotLanguage')) {
+    document.getElementById('autoPilotLanguage').value = settings.autopilot_language;
+  }
+  if (settings.autopilot_start_time && document.getElementById('autoPilotStartTime')) {
+    document.getElementById('autoPilotStartTime').value = settings.autopilot_start_time;
+  }
+  if (settings.autopilot_end_time && document.getElementById('autoPilotEndTime')) {
+    document.getElementById('autoPilotEndTime').value = settings.autopilot_end_time;
+  }
+  if (settings.autopilot_fb !== undefined && document.getElementById('autoPilotFB')) {
+    document.getElementById('autoPilotFB').checked = (settings.autopilot_fb === 'true');
+  }
+  if (settings.autopilot_tg !== undefined && document.getElementById('autoPilotTG')) {
+    document.getElementById('autoPilotTG').checked = (settings.autopilot_tg === 'true');
+  }
+  if (settings.autopilot_webhook !== undefined && document.getElementById('autoPilotWebhook')) {
+    document.getElementById('autoPilotWebhook').checked = (settings.autopilot_webhook === 'true');
+  }
   if (settings.post_interval_minutes && document.getElementById('settingPublishInterval')) {
     document.getElementById('settingPublishInterval').value = settings.post_interval_minutes;
   }
@@ -901,6 +922,128 @@ async function publishStudioPost(platform = 'facebook') {
   }
 }
 
+// Add current studio card to automated staggered queue
+async function addToPublishQueue() {
+  if (!canvas) return;
+
+  const caption = document.getElementById('studioCaptionInput')?.value || '';
+  const title = document.getElementById('studioTitleInput')?.value || 'Breaking News';
+  const summary = document.getElementById('studioSummaryInput')?.value || '';
+
+  showToast('Queueing...', 'Preparing card and adding to publishing queue...');
+
+  try {
+    const canvasDataUrl = canvas.toDataURL('image/png', 0.96);
+    const upRes = await fetch('/api/cards/upload-canvas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image_data: canvasDataUrl,
+        title: title,
+        filename_prefix: `studio_queue_${currentStudioState.theme}`
+      })
+    });
+    const upData = await upRes.json();
+
+    if (upData.success) {
+      const scheduledTime = new Date(Date.now() + 30 * 60000).toISOString();
+      const qRes = await fetch('/api/social/queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          article_id: 'studio_' + Date.now(),
+          title: title,
+          summary: summary,
+          caption: caption,
+          card_image_path: upData.file_path,
+          platform: 'facebook',
+          scheduled_for: scheduledTime
+        })
+      });
+      const qData = await qRes.json();
+
+      if (qData.success) {
+        showToast('Added to Queue!', `Card queued successfully (Queue ID #${qData.queue_id}). It will auto-publish safely!`);
+        loadPostQueue();
+      } else {
+        showToast('Queue Notice', qData.error || 'Failed to add item to queue.', false);
+      }
+    } else {
+      showToast('Error', 'Failed to save card image.', false);
+    }
+  } catch (err) {
+    showToast('Queue Error', 'Error adding to queue: ' + err.message, false);
+  }
+}
+
+// Publish to all configured platforms simultaneously
+async function publishToAll() {
+  if (!canvas) return;
+
+  const caption = document.getElementById('studioCaptionInput')?.value || '';
+  const title = document.getElementById('studioTitleInput')?.value || 'Breaking News';
+
+  showToast('Publishing to All...', 'Sending to Facebook, Telegram and Webhooks...');
+
+  try {
+    const canvasDataUrl = canvas.toDataURL('image/png', 0.96);
+    const upRes = await fetch('/api/cards/upload-canvas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image_data: canvasDataUrl,
+        title: title,
+        filename_prefix: `studio_all_${currentStudioState.theme}`
+      })
+    });
+    const upData = await upRes.json();
+
+    if (upData.success) {
+      const imgPath = upData.file_path;
+      const results = [];
+
+      // 1. Facebook
+      try {
+        const fbRes = await fetch('/api/social/post-facebook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_path: imgPath, caption: caption })
+        });
+        const fbData = await fbRes.json();
+        results.push(`Facebook: ${fbData.success ? '✓' : '✗'}`);
+      } catch (e) { results.push('Facebook: ✗'); }
+
+      // 2. Telegram
+      try {
+        const tgRes = await fetch('/api/social/post-telegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_path: imgPath, caption: caption })
+        });
+        const tgData = await tgRes.json();
+        results.push(`Telegram: ${tgData.success ? '✓' : '✗'}`);
+      } catch (e) { results.push('Telegram: ✗'); }
+
+      // 3. Webhook
+      try {
+        const whRes = await fetch('/api/social/post-webhook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_path: imgPath, caption: caption })
+        });
+        const whData = await whRes.json();
+        results.push(`Webhook: ${whData.success ? '✓' : '✗'}`);
+      } catch (e) { /* ignore */ }
+
+      showToast('Multi-Post Complete', results.join(' | '), true);
+      loadPostHistory();
+      loadMetaRateLimitStatus();
+    }
+  } catch (err) {
+    showToast('Multi-Post Error', err.message, false);
+  }
+}
+
 // ==========================================
 // 6. AUTO-PILOT SCHEDULER CONTROLS
 // ==========================================
@@ -946,7 +1089,14 @@ async function saveAutoPilotSettings() {
   const payload = {
     autopilot_interval_hours: document.getElementById('autoPilotInterval').value,
     autopilot_category: document.getElementById('autoPilotCategory').value,
-    autopilot_max_posts: document.getElementById('autoPilotMaxPosts').value
+    autopilot_max_posts: document.getElementById('autoPilotMaxPosts').value,
+    autopilot_theme: document.getElementById('autoPilotTheme')?.value || 'turkiye_urdu_split',
+    autopilot_language: document.getElementById('autoPilotLanguage')?.value || 'urdu',
+    autopilot_start_time: document.getElementById('autoPilotStartTime')?.value || '06:00',
+    autopilot_end_time: document.getElementById('autoPilotEndTime')?.value || '23:00',
+    autopilot_fb: document.getElementById('autoPilotFB')?.checked ? 'true' : 'false',
+    autopilot_tg: document.getElementById('autoPilotTG')?.checked ? 'true' : 'false',
+    autopilot_webhook: document.getElementById('autoPilotWebhook')?.checked ? 'true' : 'false'
   };
 
   try {

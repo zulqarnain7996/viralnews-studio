@@ -72,17 +72,36 @@ def run_autopilot_cycle(manual_trigger=False):
     if not enabled and not manual_trigger:
         return {"status": "skipped", "message": "Auto-Pilot is currently disabled in settings."}
 
+    # Active Hours Window Check (e.g. 06:00 to 23:00)
+    if not manual_trigger:
+        start_time_str = get_setting("autopilot_start_time", "06:00")
+        end_time_str = get_setting("autopilot_end_time", "23:00")
+        now_time_str = datetime.now().strftime("%H:%M")
+        if start_time_str and end_time_str:
+            if start_time_str <= end_time_str:
+                if not (start_time_str <= now_time_str <= end_time_str):
+                    log_scheduler("auto_pilot_skipped", f"Current time ({now_time_str}) is outside active hours window ({start_time_str} - {end_time_str}).", "info")
+                    return {"status": "skipped", "message": f"Outside active hours ({start_time_str} - {end_time_str})."}
+            else: # Overnight window (e.g. 22:00 to 06:00)
+                if not (now_time_str >= start_time_str or now_time_str <= end_time_str):
+                    log_scheduler("auto_pilot_skipped", f"Current time ({now_time_str}) is outside active hours window ({start_time_str} - {end_time_str}).", "info")
+                    return {"status": "skipped", "message": f"Outside active hours ({start_time_str} - {end_time_str})."}
+
     category = get_setting("autopilot_category", "trending")
     max_posts = int(get_setting("autopilot_max_posts", "2"))
-    theme = get_setting("default_theme", "breaking_red")
+    theme = get_setting("autopilot_theme", get_setting("default_theme", "turkiye_urdu_split"))
     aspect_ratio = get_setting("default_aspect_ratio", "1:1")
     page_name = get_setting("page_name", "PAK NEWS 24/7")
     page_handle = get_setting("page_handle", "@PakNewsOfficial")
     local_city = get_setting("local_city", "Lahore")
-    language = get_setting("language", "urdu")
+    language = get_setting("autopilot_language", get_setting("language", "urdu"))
     post_interval_mins = int(get_setting("post_interval_minutes", "45"))
 
-    log_scheduler("auto_pilot_start", f"Running cycle for category: {category}, language: {language}, max posts: {max_posts}, interval: {post_interval_mins}m")
+    fb_enabled = get_setting("autopilot_fb", "true").lower() == "true"
+    tg_enabled = get_setting("autopilot_tg", "false").lower() == "true"
+    webhook_enabled = get_setting("autopilot_webhook", "false").lower() == "true"
+
+    log_scheduler("auto_pilot_start", f"Running cycle for category: {category}, language: {language}, theme: {theme}, max posts: {max_posts}")
 
     try:
         # Fetch fresh news
@@ -116,10 +135,12 @@ def run_autopilot_cycle(manual_trigger=False):
             caption = generate_social_caption(art)
 
             if idx == 0:
-                # First post publishes immediately
-                fb_res = post_to_facebook(card_res["file_path"], caption)
-                webhook_res = post_to_webhook(card_res["file_path"], caption, art)
-                tg_res = post_to_telegram(card_res["file_path"], caption)
+                # First post publishes immediately based on enabled platforms
+                fb_res = post_to_facebook(card_res["file_path"], caption) if fb_enabled else {"mode": "disabled"}
+                if webhook_enabled:
+                    post_to_webhook(card_res["file_path"], caption, art)
+                if tg_enabled:
+                    post_to_telegram(card_res["file_path"], caption)
 
                 posted_count += 1
                 results.append({

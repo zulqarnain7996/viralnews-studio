@@ -193,16 +193,22 @@
               </div>
 
               <!-- Quick Canvas Action Bar -->
-              <div class="card-footer bg-dark border-secondary d-flex flex-wrap justify-content-between align-items-center gap-2 p-3">
-                <div class="d-flex gap-2">
+              <div class="card-footer bg-dark border-secondary p-3">
+                <!-- Row 1: Download & Copy -->
+                <div class="d-flex flex-wrap gap-2 mb-2">
                   <button class="btn btn-success fw-bold" onclick="downloadCurrentCanvas()">
                     <i class="fa-solid fa-download me-1"></i> Download PNG
                   </button>
                   <button class="btn btn-outline-light" onclick="copyStudioCaption()">
                     <i class="fa-solid fa-copy me-1"></i> Copy Caption & Tags
                   </button>
+                  <button class="btn btn-outline-warning text-white" onclick="addToPublishQueue()">
+                    <i class="fa-solid fa-clock me-1"></i> Add to Queue
+                  </button>
                 </div>
-                <div class="d-flex gap-2">
+
+                <!-- Row 2: Publishing Actions -->
+                <div class="d-flex flex-wrap gap-2">
                   <button class="btn btn-primary fw-bold" onclick="publishStudioPost('facebook')">
                     <i class="fa-brands fa-facebook me-1"></i> Post to FB Page
                   </button>
@@ -214,6 +220,9 @@
                   </button>
                   <button class="btn btn-danger fw-bold" onclick="generateShortVideo()" id="genVideoBtn" title="Generate short video with voiceover">
                     <i class="fa-solid fa-video me-1"></i> Short Video
+                  </button>
+                  <button class="btn btn-outline-success text-white fw-bold" onclick="publishToAll()" title="Post to all connected platforms at once">
+                    <i class="fa-solid fa-share-nodes me-1"></i> Post to All
                   </button>
                 </div>
               </div>
@@ -306,6 +315,18 @@
                     </button>
                     <button class="btn btn-sm theme-btn text-start d-flex align-items-center gap-2" data-theme="urdu_khabarnama" onclick="setStudioTheme('urdu_khabarnama')">
                       <span class="color-dot" style="background: #ff0055;"></span> 🚨 TV Khabarnama
+                    </button>
+                  </div>
+
+                  <!-- Saved Custom Templates (dynamically populated) -->
+                  <div id="customTemplatesSection" class="d-none mt-2">
+                    <div class="theme-category-header text-success fw-bold">💾 Your Custom Templates</div>
+                    <div class="grid-theme-buttons mb-2" id="customTemplateButtons"></div>
+                  </div>
+
+                  <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-warning w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#templateBuilderModal">
+                      <i class="fa-solid fa-plus me-1"></i> Create Custom Template
                     </button>
                   </div>
                 </div>
@@ -496,6 +517,73 @@
                     <option value="3">3 Top Articles</option>
                     <option value="5">5 Top Articles</option>
                   </select>
+                </div>
+
+                <!-- Auto-Pilot Template Style -->
+                <div class="mb-3">
+                  <label class="form-label text-white">CARD TEMPLATE STYLE</label>
+                  <select id="autoPilotTheme" class="form-select bg-dark border-secondary text-white">
+                    <option value="turkiye_urdu_split" selected>🇹🇷 Türkiye Urdu Red (Default)</option>
+                    <option value="neon_cyber_split">⚡ Cyber Broadcast Pro</option>
+                    <option value="royal_gold_split">👑 Royal Velvet & Gold</option>
+                    <option value="vox_spotlight_dark">🌍 Global Spotlight</option>
+                    <option value="ticker_live_tv">📺 TV Live Ticker</option>
+                    <option value="cinematic_letterbox">🎬 Cinematic Letterbox</option>
+                    <option value="dw_quote_blue">🔵 DW Urdu Sky Blue</option>
+                    <option value="axios_minimal">📰 Axios Minimal</option>
+                    <option value="bbc_broadcast">📡 BBC Broadcast</option>
+                    <option value="aurora_emerald">🌿 Aurora Emerald</option>
+                    <option value="glass_prism">🔮 Glass Prism</option>
+                  </select>
+                </div>
+
+                <!-- Auto-Pilot Language -->
+                <div class="mb-3">
+                  <label class="form-label text-white">CAPTION LANGUAGE</label>
+                  <select id="autoPilotLanguage" class="form-select bg-dark border-secondary text-white">
+                    <option value="urdu" selected>🇵🇰 اردو — Urdu Viral Captions</option>
+                    <option value="english">🇬🇧 English — English Captions</option>
+                    <option value="both">🌐 Both — Bilingual Captions</option>
+                  </select>
+                </div>
+
+                <!-- Auto-Pilot Platform Targets -->
+                <div class="mb-3">
+                  <label class="form-label text-white">PUBLISH TO PLATFORMS</label>
+                  <div class="d-flex flex-wrap gap-2">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="autoPilotFB" checked>
+                      <label class="form-check-label text-white" for="autoPilotFB"><i class="fa-brands fa-facebook text-primary me-1"></i> Facebook</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="autoPilotTG">
+                      <label class="form-check-label text-white" for="autoPilotTG"><i class="fa-brands fa-telegram text-info me-1"></i> Telegram</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="autoPilotWebhook">
+                      <label class="form-check-label text-white" for="autoPilotWebhook"><i class="fa-solid fa-webhook text-success me-1"></i> Webhook</label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Posting Time Window -->
+                <div class="mb-3">
+                  <label class="form-label text-white">ACTIVE HOURS (Optional)</label>
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-dark border-secondary text-white-50">From</span>
+                        <input type="time" id="autoPilotStartTime" class="form-control bg-dark border-secondary text-white" value="06:00">
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-dark border-secondary text-white-50">To</span>
+                        <input type="time" id="autoPilotEndTime" class="form-control bg-dark border-secondary text-white" value="23:00">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="small text-white-50 mt-1">Auto-pilot will only post during these hours</div>
                 </div>
 
                 <!-- Manual Trigger Button -->
@@ -1280,5 +1368,150 @@
     }
   }
   </script>
+
+  <!-- ========================================== -->
+  <!-- TEMPLATE BUILDER MODAL -->
+  <!-- ========================================== -->
+  <div class="modal fade" id="templateBuilderModal" tabindex="-1" aria-labelledby="templateBuilderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content bg-dark text-white border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title fw-bold" id="templateBuilderModalLabel">
+            <i class="fa-solid fa-palette me-2 text-warning"></i> Template Builder — Create Your Own Style
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-3">
+          <div class="row g-3">
+
+            <!-- Left: Configuration -->
+            <div class="col-12 col-md-7">
+              <!-- Template Name -->
+              <div class="mb-3">
+                <label class="form-label text-white fw-bold"><i class="fa-solid fa-tag me-1 text-info"></i> TEMPLATE NAME</label>
+                <input type="text" id="tbTemplateName" class="form-control bg-dark border-secondary text-white fw-bold" placeholder="e.g. My Breaking Red" value="My Custom Template">
+              </div>
+
+              <!-- Reference Image Upload -->
+              <div class="mb-3">
+                <label class="form-label text-white fw-bold"><i class="fa-solid fa-image me-1 text-danger"></i> REFERENCE IMAGE (Optional)</label>
+                <div class="p-3 rounded text-center cursor-pointer border-dashed" style="border: 2px dashed rgba(255,255,255,0.2); background: rgba(255,255,255,0.03);" onclick="document.getElementById('tbImageUpload').click()">
+                  <i class="fa-solid fa-cloud-arrow-up fa-2x text-warning mb-2 d-block"></i>
+                  <span class="small text-white-50">Click or drag an image to use as reference</span>
+                  <input type="file" id="tbImageUpload" accept="image/*" class="d-none" onchange="handleTBImageUpload(this)">
+                </div>
+                <div id="tbImagePreview" class="mt-2 d-none">
+                  <img id="tbImagePreviewImg" class="rounded border border-secondary" style="max-height: 100px; max-width: 100%;">
+                </div>
+              </div>
+
+              <!-- Color Pickers -->
+              <div class="mb-3">
+                <label class="form-label text-white fw-bold"><i class="fa-solid fa-swatchbook me-1 text-warning"></i> COLORS</label>
+                <div class="row g-2">
+                  <div class="col-6">
+                    <label class="form-label small text-white-50 mb-1">Background</label>
+                    <div class="input-group input-group-sm">
+                      <input type="color" id="tbBgColor" value="#0a0d14" class="form-control form-control-color bg-dark border-secondary" onchange="updateTemplatePreview()">
+                      <input type="text" class="form-control bg-dark border-secondary text-white font-monospace" value="#0a0d14" id="tbBgColorHex" oninput="document.getElementById('tbBgColor').value=this.value; updateTemplatePreview()">
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small text-white-50 mb-1">Accent</label>
+                    <div class="input-group input-group-sm">
+                      <input type="color" id="tbAccentColor" value="#ff1e38" class="form-control form-control-color bg-dark border-secondary" onchange="updateTemplatePreview()">
+                      <input type="text" class="form-control bg-dark border-secondary text-white font-monospace" value="#ff1e38" id="tbAccentColorHex" oninput="document.getElementById('tbAccentColor').value=this.value; updateTemplatePreview()">
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small text-white-50 mb-1">Headline Text</label>
+                    <div class="input-group input-group-sm">
+                      <input type="color" id="tbHeadlineColor" value="#ffffff" class="form-control form-control-color bg-dark border-secondary" onchange="updateTemplatePreview()">
+                      <input type="text" class="form-control bg-dark border-secondary text-white font-monospace" value="#ffffff" id="tbHeadlineColorHex" oninput="document.getElementById('tbHeadlineColor').value=this.value; updateTemplatePreview()">
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <label class="form-label small text-white-50 mb-1">Footer BG</label>
+                    <div class="input-group input-group-sm">
+                      <input type="color" id="tbFooterBgColor" value="#080a0f" class="form-control form-control-color bg-dark border-secondary" onchange="updateTemplatePreview()">
+                      <input type="text" class="form-control bg-dark border-secondary text-white font-monospace" value="#080a0f" id="tbFooterBgColorHex" oninput="document.getElementById('tbFooterBgColor').value=this.value; updateTemplatePreview()">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Layout Options -->
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label small text-white-50 mb-1">Photo Position</label>
+                  <select id="tbPhotoPosition" class="form-select form-select-sm bg-dark border-secondary text-white" onchange="updateTemplatePreview()">
+                    <option value="top" selected>Top Split (50/50)</option>
+                    <option value="left">Left Side (40/60)</option>
+                    <option value="bottom">Bottom Panel</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label small text-white-50 mb-1">Photo Size</label>
+                  <div class="d-flex align-items-center gap-2">
+                    <input type="range" class="form-range flex-grow-1" id="tbPhotoSize" min="30" max="70" value="50" oninput="document.getElementById('tbPhotoSizeVal').innerText=this.value+'%'; updateTemplatePreview()">
+                    <span class="small text-white fw-bold" id="tbPhotoSizeVal">50%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-6">
+                  <label class="form-label small text-white-50 mb-1">Font Style</label>
+                  <select id="tbFontStyle" class="form-select form-select-sm bg-dark border-secondary text-white" onchange="updateTemplatePreview()">
+                    <option value="impact" selected>Impact / Bold</option>
+                    <option value="inter">Inter / Clean</option>
+                    <option value="serif">Georgia / Serif</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label class="form-label small text-white-50 mb-1">Badge Style</label>
+                  <select id="tbBadgeStyle" class="form-select form-select-sm bg-dark border-secondary text-white" onchange="updateTemplatePreview()">
+                    <option value="pill" selected>Rounded Pill</option>
+                    <option value="rect">Rectangle</option>
+                    <option value="minimal">Minimal Text</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="tbShowBadge" checked onchange="updateTemplatePreview()">
+                <label class="form-check-label text-white" for="tbShowBadge">Show LIVE Badge</label>
+              </div>
+            </div>
+
+            <!-- Right: Live Preview -->
+            <div class="col-12 col-md-5 d-flex flex-column align-items-center">
+              <label class="form-label text-white fw-bold text-center"><i class="fa-solid fa-eye me-1 text-info"></i> LIVE PREVIEW</label>
+              <div class="border border-secondary rounded p-1 shadow bg-black">
+                <canvas id="templatePreviewCanvas" width="360" height="360" style="width: 100%; max-width: 360px; border-radius: 6px;"></canvas>
+              </div>
+              <div class="small text-white-50 mt-2 text-center">
+                <i class="fa-solid fa-circle-info me-1"></i> Preview updates in real-time
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary d-flex justify-content-between">
+          <button type="button" class="btn btn-outline-secondary text-white" data-bs-dismiss="modal">
+            <i class="fa-solid fa-xmark me-1"></i> Cancel
+          </button>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-success fw-bold" onclick="saveCustomTemplate()">
+              <i class="fa-solid fa-floppy-disk me-1"></i> Save Template
+            </button>
+            <button type="button" class="btn btn-warning text-dark fw-bold" onclick="saveAndUseCustomTemplate()">
+              <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Save & Use in Studio
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
