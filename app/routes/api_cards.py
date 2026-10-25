@@ -231,7 +231,12 @@ class VideoGenerateRequest(BaseModel):
     card_image_data:  Optional[str] = None
     aspect_ratio:     Optional[str] = "9:16"
     voice_lang:       Optional[str] = "auto"
-    voice_speed:      Optional[str] = "normal"
+    voice_id:         Optional[str] = None
+    voice_speed:      Optional[str] = "news_fast"
+    voice_pitch:      Optional[str] = "normal"
+    bg_music:         Optional[str] = "breaking"
+    bg_music_volume:  Optional[float] = 0.20
+    custom_music_url: Optional[str] = None
     transition:       Optional[str] = "ken_burns"
     narrative_text:   Optional[str] = None
     mute_audio:       Optional[bool] = False
@@ -256,7 +261,12 @@ def generate_video(req: VideoGenerateRequest):
         "card_image_data":  req.card_image_data,
         "aspect_ratio":     req.aspect_ratio or "9:16",
         "voice_lang":       req.voice_lang or "auto",
-        "voice_speed":      req.voice_speed or "normal",
+        "voice_id":         req.voice_id,
+        "voice_speed":      req.voice_speed or "news_fast",
+        "voice_pitch":      req.voice_pitch or "normal",
+        "bg_music":         req.bg_music or "breaking",
+        "bg_music_volume":  req.bg_music_volume if req.bg_music_volume is not None else 0.20,
+        "custom_music_url": req.custom_music_url,
         "transition":       req.transition or "ken_burns",
         "narrative_text":   req.narrative_text,
         "mute_audio":       bool(req.mute_audio),

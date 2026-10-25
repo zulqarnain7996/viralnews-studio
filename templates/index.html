@@ -1127,22 +1127,49 @@
                 </select>
               </div>
               <div class="col-6 col-md-4">
-                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-microphone me-1 text-info"></i> VOICEOVER (TTS)</label>
+                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-microphone me-1 text-info"></i> REPORTER VOICE</label>
                 <select id="videoOptVoice" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
-                  <option value="auto" selected>🎙️ Auto-Detect (Urdu / English)</option>
-                  <option value="ur">🇵🇰 Urdu Natural Voice</option>
-                  <option value="en">🇺🇸 English (US Accent)</option>
-                  <option value="en-uk">🇬🇧 English (UK Accent)</option>
-                  <option value="mute">🔇 Mute / Silent Video</option>
+                  <option value="ur-PK-AsadNeural" selected>🎙️ اسد (پاکستانی مرد نیوز اینکر)</option>
+                  <option value="ur-PK-UzmaNeural">🎙️ عظمیٰ (پاکستانی خاتون رپورٹر)</option>
+                  <option value="ur-IN-SalmanNeural">🎙️ سلمان (اردو مرد اینکر)</option>
+                  <option value="ur-IN-GulNeural">🎙️ گل (اردو خاتون اینکر)</option>
+                  <option value="en-US-GuyNeural">🇺🇸 Guy (US CNN Anchor)</option>
+                  <option value="en-GB-RyanNeural">🇬🇧 Ryan (BBC UK Reporter)</option>
+                  <option value="en-US-JennyNeural">🇺🇸 Jenny (US Female Anchor)</option>
+                  <option value="mute">🔇 Mute Voice (Music Only)</option>
                 </select>
               </div>
               <div class="col-12 col-md-4">
-                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-film me-1 text-danger"></i> TRANSITION EFFECT</label>
-                <select id="videoOptTransition" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
-                  <option value="ken_burns" selected>🎬 Ken Burns (Cinematic Zoom)</option>
-                  <option value="crossfade">✨ Smooth Crossfade (Multi-Image)</option>
-                  <option value="zoom_slide">⚡ Zoom & Sweep</option>
+                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-gauge-high me-1 text-warning"></i> VOICE CADENCE</label>
+                <select id="videoOptSpeed" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold">
+                  <option value="news_fast" selected>⚡ TV News Bulletin (Fast & Urgent)</option>
+                  <option value="normal">🎙️ Standard Broadcast</option>
+                  <option value="slow">📖 Calm & Deliberate</option>
                 </select>
+              </div>
+            </div>
+
+            <!-- Background Music & Audio Mixing Row -->
+            <div class="row g-2 mb-3 p-2 rounded bg-black bg-opacity-25 border border-secondary">
+              <div class="col-12 col-md-6">
+                <label class="form-label small text-white fw-bold mb-1"><i class="fa-solid fa-music me-1 text-danger"></i> BACKGROUND MUSIC</label>
+                <select id="videoOptBgMusic" class="form-select form-select-sm bg-dark border-secondary text-white fw-bold" onchange="toggleCustomMusicInput()">
+                  <option value="breaking" selected>🚨 Breaking News Fanfare (Geo/ARY/BBC Style)</option>
+                  <option value="trending">🔥 Trending Viral Reel Beat (TikTok/Insta Pulse)</option>
+                  <option value="tense">🕵️ Investigative / Crime Suspense (Dark Bass)</option>
+                  <option value="custom">🌐 Custom Music URL (Direct MP3)</option>
+                  <option value="none">🔇 No Music (Voice Only)</option>
+                </select>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label small text-white fw-bold mb-1 d-flex justify-content-between">
+                  <span><i class="fa-solid fa-volume-high me-1 text-success"></i> MUSIC VOLUME</span>
+                  <span id="musicVolLabel" class="text-warning">20% (Balanced)</span>
+                </label>
+                <input type="range" class="form-range" id="videoOptMusicVol" min="0.05" max="0.50" step="0.05" value="0.20" oninput="document.getElementById('musicVolLabel').innerText = Math.round(this.value * 100) + '%' + (this.value == 0.20 ? ' (Balanced)' : '')">
+              </div>
+              <div class="col-12 d-none mt-2" id="customMusicGroup">
+                <input type="url" id="videoOptCustomMusic" class="form-control form-control-sm bg-dark border-secondary text-white" placeholder="https://example.com/audio.mp3">
               </div>
             </div>
 
@@ -1344,6 +1371,18 @@
     modal.show();
   }
 
+  function toggleCustomMusicInput() {
+    const choice = document.getElementById('videoOptBgMusic')?.value;
+    const group = document.getElementById('customMusicGroup');
+    if (group) {
+      if (choice === 'custom') {
+        group.classList.remove('d-none');
+      } else {
+        group.classList.add('d-none');
+      }
+    }
+  }
+
   async function doGenerateVideo() {
     const article = getCurrentStudioArticle();
     if (!article) return;
@@ -1360,7 +1399,7 @@
     clearInterval(_videoTimerInterval);
     _videoTimerInterval = setInterval(() => {
       seconds++;
-      timerBadge.innerText = `Elapsed: ${seconds}s (rendering frames & voiceover)`;
+      timerBadge.innerText = `Elapsed: ${seconds}s (rendering frames & neural voiceover)`;
     }, 1000);
 
     const settings = JSON.parse(localStorage.getItem('viral_settings') || '{}');
@@ -1370,11 +1409,15 @@
 
     // Advanced options from modal
     const aspect_ratio = document.getElementById('videoOptRatio')?.value || '9:16';
-    const voice_pref = document.getElementById('videoOptVoice')?.value || 'auto';
-    const transition = document.getElementById('videoOptTransition')?.value || 'ken_burns';
+    const voice_id = document.getElementById('videoOptVoice')?.value || 'ur-PK-AsadNeural';
+    const voice_speed = document.getElementById('videoOptSpeed')?.value || 'news_fast';
+    const bg_music = document.getElementById('videoOptBgMusic')?.value || 'breaking';
+    const bg_music_volume = parseFloat(document.getElementById('videoOptMusicVol')?.value || '0.20');
+    const custom_music_url = document.getElementById('videoOptCustomMusic')?.value?.trim() || null;
+    const transition = 'ken_burns';
     const rawImages = (document.getElementById('videoOptImages')?.value || customImg || '').split(',').map(s => s.trim()).filter(Boolean);
     const narrative_text = document.getElementById('videoOptScript')?.value || article.title;
-    const mute_audio = (voice_pref === 'mute');
+    const mute_audio = (voice_id === 'mute');
 
     let cardImageData = null;
     if (typeof canvas !== 'undefined' && canvas) {
@@ -1389,7 +1432,12 @@
       image_urls: rawImages,
       card_image_data: cardImageData,
       aspect_ratio: aspect_ratio,
-      voice_lang: voice_pref,
+      voice_id: voice_id,
+      voice_lang: voice_id,
+      voice_speed: voice_speed,
+      bg_music: bg_music,
+      bg_music_volume: bg_music_volume,
+      custom_music_url: custom_music_url,
       transition: transition,
       narrative_text: narrative_text,
       mute_audio: mute_audio

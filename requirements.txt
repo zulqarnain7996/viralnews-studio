@@ -11,3 +11,4 @@ arabic-reshaper>=3.0.0
 python-bidi>=0.4.2
 imageio-ffmpeg>=0.4.9
 gTTS>=2.5.0
+edge-tts>=7.3.0

@@ -14,6 +14,8 @@ import math
 import base64
 import textwrap
 import subprocess
+import asyncio
+import concurrent.futures
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageOps
 from datetime import datetime
 
@@ -22,6 +24,12 @@ try:
     _FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
 except Exception:
     _FFMPEG = "ffmpeg"
+
+try:
+    import edge_tts
+    _HAS_EDGE_TTS = True
+except ImportError:
+    _HAS_EDGE_TTS = False
 
 try:
     from gtts import gTTS
@@ -41,7 +49,9 @@ import requests
 BASE_DIR   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUT_DIR = os.path.join(BASE_DIR, "data", "generated_cards")
 FONTS_DIR  = os.path.join(BASE_DIR, "static", "fonts")
+AUDIO_DIR  = os.path.join(BASE_DIR, "static", "audio")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(AUDIO_DIR, exist_ok=True)
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -132,28 +142,147 @@ def _audio_duration(mp3_path):
         pass
     return 7.0
 
-def _generate_news_audio_bed(duration: float, out_mp3_path: str):
+def _ensure_preset_audio_files():
+    """Generates the 3 essential broadcast news & trending music beds if missing."""
+    breaking_path = os.path.join(AUDIO_DIR, "breaking_news.mp3")
+    trending_path = os.path.join(AUDIO_DIR, "trending_viral.mp3")
+    tense_path    = os.path.join(AUDIO_DIR, "investigative.mp3")
+
+    if not os.path.exists(breaking_path):
+        try:
+            cmd = [
+                _FFMPEG, "-y",
+                "-f", "lavfi", "-i", "sine=f=55:d=30",
+                "-f", "lavfi", "-i", "sine=f=110:d=30",
+                "-f", "lavfi", "-i", "sine=f=880:d=30",
+                "-f", "lavfi", "-i", "anoisesrc=d=30:c=pink:r=44100:a=0.02",
+                "-filter_complex",
+                "[0:a]tremolo=f=4:d=0.8,lowpass=f=120,volume=0.35[sub];" +
+                "[1:a]tremolo=f=8:d=0.7,volume=0.15[mid];" +
+                "[2:a]tremolo=f=12:d=0.9,highpass=f=600,volume=0.08[ticker];" +
+                "[3:a]bandpass=f=2000:width=500,tremolo=f=16:d=0.9,volume=0.12[snare];" +
+                "[sub][mid][ticker][snare]amix=inputs=4:duration=longest[out]",
+                "-map", "[out]", "-c:a", "libmp3lame", "-b:a", "128k", breaking_path
+            ]
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+        except Exception:
+            pass
+
+    if not os.path.exists(trending_path):
+        try:
+            cmd = [
+                _FFMPEG, "-y",
+                "-f", "lavfi", "-i", "sine=f=60:d=30",
+                "-f", "lavfi", "-i", "sine=f=440:d=30",
+                "-f", "lavfi", "-i", "anoisesrc=d=30:c=white:r=44100:a=0.03",
+                "-filter_complex",
+                "[0:a]tremolo=f=4.2:d=0.9,lowpass=f=180,volume=0.40[kick];" +
+                "[1:a]tremolo=f=8.4:d=0.8,volume=0.12[lead];" +
+                "[2:a]bandpass=f=4000:width=1200,tremolo=f=16.8:d=0.95,volume=0.10[hats];" +
+                "[kick][lead][hats]amix=inputs=3:duration=longest[out]",
+                "-map", "[out]", "-c:a", "libmp3lame", "-b:a", "128k", trending_path
+            ]
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+        except Exception:
+            pass
+
+    if not os.path.exists(tense_path):
+        try:
+            cmd = [
+                _FFMPEG, "-y",
+                "-f", "lavfi", "-i", "sine=f=45:d=30",
+                "-f", "lavfi", "-i", "sine=f=150:d=30",
+                "-f", "lavfi", "-i", "anoisesrc=d=30:c=pink:r=44100:a=0.015",
+                "-filter_complex",
+                "[0:a]tremolo=f=1.8:d=0.9,lowpass=f=90,volume=0.45[heart];" +
+                "[1:a]tremolo=f=3.6:d=0.6,volume=0.10[drone];" +
+                "[2:a]highpass=f=2500,tremolo=f=7.2:d=0.9,volume=0.07[clock];" +
+                "[heart][drone][clock]amix=inputs=3:duration=longest[out]",
+                "-map", "[out]", "-c:a", "libmp3lame", "-b:a", "128k", tense_path
+            ]
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=30)
+        except Exception:
+            pass
+
+def _synthesize_voiceover(text: str, voice_id: str, speed_opt: str, pitch_opt: str, out_path: str) -> bool:
     """
-    Synthesizes a broadcast newsroom ambient background music bed using FFmpeg.
-    Creates a deep 65Hz/120Hz pulsing bass + high rhythm ticker pulse, giving that urgent TV newsroom feel.
+    Synthesize broadcast reporter voiceover using Microsoft Edge Neural TTS with gTTS fallback.
+    Delivers natural, human-like news reporter delivery.
     """
-    try:
-        cmd = [
-            _FFMPEG, "-y",
-            "-f", "lavfi", "-i", f"anoisesrc=d={duration + 1}:c=pink:r=44100:a=0.015",
-            "-f", "lavfi", "-i", f"sine=f=120:d={duration + 1}",
-            "-filter_complex",
-            "[1:a]volume=0.20,lowpass=f=240,tremolo=f=4:d=0.75[bass];[0:a][bass]amix=inputs=2:duration=first[out]",
-            "-map", "[out]",
-            "-c:a", "libmp3lame",
-            "-b:a", "128k",
-            out_mp3_path
-        ]
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=20)
-        return os.path.exists(out_mp3_path)
-    except Exception as e:
-        print(f"[VideoGen] Audio bed synthesis warning: {e}")
-        return False
+    # Map voice aliases to Microsoft Neural voice identifiers
+    voice_map = {
+        "ur": "ur-PK-AsadNeural",
+        "ur_male": "ur-PK-AsadNeural",
+        "ur_female": "ur-PK-UzmaNeural",
+        "ur-PK-AsadNeural": "ur-PK-AsadNeural",
+        "ur-PK-UzmaNeural": "ur-PK-UzmaNeural",
+        "ur-IN-SalmanNeural": "ur-IN-SalmanNeural",
+        "ur-IN-GulNeural": "ur-IN-GulNeural",
+        "en": "en-US-GuyNeural",
+        "en_male": "en-US-GuyNeural",
+        "en_female": "en-US-JennyNeural",
+        "en_uk": "en-GB-RyanNeural",
+        "en-US-GuyNeural": "en-US-GuyNeural",
+        "en-US-JennyNeural": "en-US-JennyNeural",
+        "en-GB-RyanNeural": "en-GB-RyanNeural",
+        "en-US-AndrewMultilingualNeural": "en-US-AndrewMultilingualNeural"
+    }
+
+    selected_voice = voice_map.get(voice_id)
+    if not selected_voice:
+        selected_voice = "ur-PK-AsadNeural" if _is_urdu(text) else "en-US-GuyNeural"
+
+    # Speed rate tuning
+    rate_map = {
+        "news_fast": "+7%",  # Urgent TV news bulletin pace
+        "normal": "+2%",     # Standard natural broadcast
+        "slow": "-6%"        # Deliberate explanatory
+    }
+    rate_val = rate_map.get(speed_opt, "+5%")
+
+    # Pitch tuning
+    pitch_map = {
+        "deep": "-3Hz",      # Deep authoritative resonance
+        "normal": "+0Hz",
+        "energetic": "+4Hz"  # Urgent Breaking News tone
+    }
+    pitch_val = pitch_map.get(pitch_opt, "+0Hz")
+
+    # 1. Try Microsoft Edge Neural Voice (Ultra-Realistic)
+    if _HAS_EDGE_TTS:
+        try:
+            async def _edge_worker():
+                communicate = edge_tts.Communicate(text, selected_voice, rate=rate_val, pitch=pitch_val)
+                await communicate.save(out_path)
+
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = None
+
+            if loop and loop.is_running():
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                    future = pool.submit(asyncio.run, _edge_worker())
+                    future.result(timeout=30)
+            else:
+                asyncio.run(_edge_worker())
+
+            if os.path.exists(out_path) and os.path.getsize(out_path) > 500:
+                return True
+        except Exception as e:
+            print(f"[VideoGen] EdgeTTS warning: {e}, attempting gTTS fallback...")
+
+    # 2. Fallback to gTTS if EdgeTTS is unreachable
+    if _HAS_GTTS:
+        try:
+            lang = "ur" if _is_urdu(text) else "en"
+            tts = gTTS(text=text, lang=lang, slow=(speed_opt == "slow"))
+            tts.save(out_path)
+            return os.path.exists(out_path) and os.path.getsize(out_path) > 500
+        except Exception as ge:
+            print(f"[VideoGen] gTTS fallback error: {ge}")
+
+    return False
 
 # ── Core Generator ───────────────────────────────────────────────────────────
 
@@ -189,49 +318,69 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
     page_handle = options.get("page_handle", "@PakNewsOfficial")
     is_urdu     = _is_urdu(title)
 
+    # Ensure preset broadcast audio beds exist
+    _ensure_preset_audio_files()
+
     # Voiceover configuration
-    voice_pref  = options.get("voice_lang", "auto")
-    if voice_pref == "ur":
-        tts_lang = "ur"
-    elif voice_pref in ["en", "en-us"]:
-        tts_lang = "en"
-    elif voice_pref == "en-uk":
-        tts_lang = "en-uk"
-    else:
-        tts_lang = "ur" if is_urdu else "en"
+    voice_choice = options.get("voice_id") or options.get("voice_lang", "auto")
+    mute_voice   = options.get("mute_audio", False) or (voice_choice == "mute")
+    voice_speed  = options.get("voice_speed", "news_fast")
+    voice_pitch  = options.get("voice_pitch", "normal")
+    narr_text    = options.get("narrative_text") or (title if is_urdu else f"{title}. {summary}"[:400])
 
-    mute_audio  = options.get("mute_audio", False)
-    slow_speed  = (options.get("voice_speed") == "slow")
-    narr_text   = options.get("narrative_text") or (title if is_urdu else f"{title}. {summary}"[:400])
-
-    art_id      = article.get("id") or datetime.now().strftime("%Y%m%d%H%M%S")
-    ts          = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_name    = f"video_{art_id}_{aspect_ratio.replace(':', 'x')}_{ts}.mp4"
-    out_path    = os.path.join(OUTPUT_DIR, out_name)
-    tmp_vid     = os.path.join(OUTPUT_DIR, f"_tmp_v_{art_id}.mp4")
-    tmp_audio   = os.path.join(OUTPUT_DIR, f"_tmp_a_{art_id}.mp3")
+    art_id       = article.get("id") or datetime.now().strftime("%Y%m%d%H%M%S")
+    ts           = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_name     = f"video_{art_id}_{aspect_ratio.replace(':', 'x')}_{ts}.mp4"
+    out_path     = os.path.join(OUTPUT_DIR, out_name)
+    tmp_vid      = os.path.join(OUTPUT_DIR, f"_tmp_v_{art_id}.mp4")
+    tmp_audio    = os.path.join(OUTPUT_DIR, f"_tmp_a_{art_id}.mp3")
     tmp_bg_audio = os.path.join(OUTPUT_DIR, f"_tmp_bg_{art_id}.mp3")
 
-    # ── 1. Voiceover (TTS) ──────────────────────────────────────────────────
+    # ── 1. Voiceover (Microsoft Edge Neural Anchor TTS) ─────────────────────
     duration   = 8.0
     has_audio  = False
 
-    if not mute_audio and _HAS_GTTS:
-        try:
-            clean_tts_lang = "ur" if "ur" in tts_lang else "en"
-            tts = gTTS(text=narr_text, lang=clean_tts_lang, slow=slow_speed)
-            tts.save(tmp_audio)
-            has_audio = True
-            duration  = _audio_duration(tmp_audio)
-            duration  = max(6.0, min(30.0, duration))
-        except Exception as e:
-            print(f"[VideoGen] TTS warning: {e}")
+    if not mute_voice:
+        has_audio = _synthesize_voiceover(
+            text=narr_text,
+            voice_id=voice_choice,
+            speed_opt=voice_speed,
+            pitch_opt=voice_pitch,
+            out_path=tmp_audio
+        )
+        if has_audio and os.path.exists(tmp_audio):
+            duration = _audio_duration(tmp_audio)
+            duration = max(6.0, min(30.0, duration))
 
     fps          = 25
     total_frames = int(duration * fps)
 
-    # ── 2. Background Newsroom Audio Bed ────────────────────────────────────
-    has_bg_audio = _generate_news_audio_bed(duration, tmp_bg_audio)
+    # ── 2. Background Music Configuration ───────────────────────────────────
+    bg_music_choice  = options.get("bg_music", "breaking")
+    bg_music_volume  = float(options.get("bg_music_volume", 0.20))
+    custom_music_url = options.get("custom_music_url")
+
+    bg_music_file = None
+    if bg_music_choice == "breaking":
+        bg_music_file = os.path.join(AUDIO_DIR, "breaking_news.mp3")
+    elif bg_music_choice == "trending":
+        bg_music_file = os.path.join(AUDIO_DIR, "trending_viral.mp3")
+    elif bg_music_choice == "tense":
+        bg_music_file = os.path.join(AUDIO_DIR, "investigative.mp3")
+    elif bg_music_choice == "custom" and custom_music_url:
+        try:
+            r = requests.get(custom_music_url, timeout=15)
+            if r.status_code == 200:
+                with open(tmp_bg_audio, "wb") as f_out:
+                    f_out.write(r.content)
+                bg_music_file = tmp_bg_audio
+        except Exception as e:
+            print(f"[VideoGen] Custom music download failed: {e}")
+            bg_music_file = os.path.join(AUDIO_DIR, "breaking_news.mp3")
+    elif bg_music_choice != "none":
+        bg_music_file = os.path.join(AUDIO_DIR, "breaking_news.mp3")
+
+    has_bg_audio = bool(bg_music_file and os.path.exists(bg_music_file))
 
     # ── 3. Prepare Visual Assets (Studio Card & Photo Viewport) ─────────────
     card_data = options.get("card_image_data")
@@ -411,17 +560,17 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
     except Exception as e:
         print(f"[VideoGen] FFmpeg frame pipe error: {e}")
 
-    # ── 5. Audio Mixing: Voiceover + Background Newsroom Music ───────────────
-    if has_audio and os.path.exists(tmp_audio) and has_bg_audio and os.path.exists(tmp_bg_audio):
-        # Mix voiceover at 100% volume with background news bed at 20% volume
-        # tmp_bg_audio is generated for the full duration, so amix duration=longest plays bg until video ends
+    # ── 5. Audio Mixing: Voiceover + Background Music ───────────────────────
+    if has_audio and os.path.exists(tmp_audio) and has_bg_audio and os.path.exists(bg_music_file):
+        # Mix voiceover at 100% volume with looped background news bed at user-selected volume
+        # We loop and trim the bg track to duration so amix duration=longest runs cleanly without buffer hangs
         merge_cmd = [
             _FFMPEG, "-y",
             "-i", tmp_vid,
             "-i", tmp_audio,
-            "-i", tmp_bg_audio,
+            "-stream_loop", "-1", "-t", str(round(duration, 2)), "-i", bg_music_file,
             "-filter_complex",
-            "[1:a]volume=1.0[voice];[2:a]volume=0.20[bg];[voice][bg]amix=inputs=2:duration=longest:dropout_transition=2[aout]",
+            f"[1:a]volume=1.0[voice];[2:a]volume={bg_music_volume}[bg];[voice][bg]amix=inputs=2:duration=longest:dropout_transition=2[aout]",
             "-map", "0:v",
             "-map", "[aout]",
             "-c:v", "copy",
@@ -443,13 +592,13 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
             out_path
         ]
         subprocess.run(merge_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    elif has_bg_audio and os.path.exists(tmp_bg_audio):
-        # Mute voiceover, play broadcast music bed at 60%
+    elif has_bg_audio and os.path.exists(bg_music_file):
+        # Voice muted, play background music bed
         merge_cmd = [
             _FFMPEG, "-y",
             "-i", tmp_vid,
-            "-i", tmp_bg_audio,
-            "-filter_complex", "[1:a]volume=0.60[aout]",
+            "-stream_loop", "-1", "-t", str(round(duration, 2)), "-i", bg_music_file,
+            "-filter_complex", f"[1:a]volume={min(0.65, bg_music_volume * 2.5)}[aout]",
             "-map", "0:v",
             "-map", "[aout]",
             "-c:v", "copy",
