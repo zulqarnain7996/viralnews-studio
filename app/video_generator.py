@@ -101,8 +101,30 @@ def _decode_base64_image(data_str):
         return None
 
 def _fetch(url, timeout=8):
-    if not url or not str(url).startswith("http"):
+    if not url:
         return None
+    url = str(url).strip()
+    # Support direct base64 data URLs (e.g. from file picker)
+    if url.startswith("data:image"):
+        img = _decode_base64_image(url)
+        return img.convert("RGB") if img else None
+    # Support local filesystem paths
+    if os.path.exists(url):
+        try:
+            return Image.open(url).convert("RGB")
+        except Exception:
+            pass
+    if url.startswith("/static/") or url.startswith("static/"):
+        rel_p = url.lstrip("/")
+        local_p = os.path.join(BASE_DIR, rel_p)
+        if os.path.exists(local_p):
+            try:
+                return Image.open(local_p).convert("RGB")
+            except Exception:
+                pass
+    if not url.startswith("http://") and not url.startswith("https://"):
+        return None
+
     high_res_url = url
     if "img.express.pk" in high_res_url:
         high_res_url = re.sub(r'-\d+x\d+(\.\w+)$', r'\1', high_res_url)
@@ -430,6 +452,20 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
     elif not loaded_images:
         loaded_images = [Image.new("RGB", (width, split_y), (15, 18, 25))]
 
+    # If only 1 image provided, generate 4 distinct cinematic angles/crops so scenes change visibly!
+    if len(loaded_images) == 1:
+        base_img = loaded_images[0]
+        bw, bh = base_img.size
+        # Shot 1: Wide establishing shot
+        shot1 = base_img
+        # Shot 2: Close-up center focus
+        shot2 = ImageOps.fit(base_img.crop((int(bw * 0.12), int(bh * 0.12), int(bw * 0.88), int(bh * 0.88))), (bw, bh), centering=(0.5, 0.4))
+        # Shot 3: Left-side subject focus
+        shot3 = ImageOps.fit(base_img.crop((0, 0, int(bw * 0.78), bh)), (bw, bh), centering=(0.25, 0.5))
+        # Shot 4: Right-side subject focus
+        shot4 = ImageOps.fit(base_img.crop((int(bw * 0.22), 0, bw, bh)), (bw, bh), centering=(0.75, 0.5))
+        loaded_images = [shot1, shot2, shot3, shot4]
+
     num_images = len(loaded_images)
     scene_interval = float(options.get("scene_interval", 2.5))  # Cut every 2.5 seconds!
 
@@ -451,6 +487,9 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
     )
+
+    prev_scene_snapshot = None
+    last_scene_idx = -1
 
     for f in range(total_frames):
         cur_sec = f / fps
@@ -504,12 +543,16 @@ def generate_news_video(article: dict, options: dict = None) -> dict:
             cy = (zh - viewport_h) // 2
             scene_frame = bg_r.crop((cx, cy, cx + viewport_w, cy + viewport_h)).convert("RGBA")
 
-        # Smooth cut transition between scenes
-        if t_scene < 0.15 and scene_idx > 0:
-            # Subtle flash / blend on scene change
-            blend_a = int((1.0 - (t_scene / 0.15)) * 60)
-            flash = Image.new("RGBA", (viewport_w, viewport_h), (255, 255, 255, blend_a))
+        # Smooth television crossfade dissolve + broadcast flash transition
+        if scene_idx > 0 and t_scene < 0.25 and prev_scene_snapshot:
+            alpha = min(1.0, max(0.0, t_scene / 0.25))
+            scene_frame = Image.blend(prev_scene_snapshot, scene_frame, alpha)
+            flash_a = int((1.0 - alpha) * 100)
+            flash = Image.new("RGBA", (viewport_w, viewport_h), (255, 255, 255, flash_a))
             scene_frame = Image.alpha_composite(scene_frame, flash)
+
+        # Update snapshot for next transition
+        prev_scene_snapshot = scene_frame.copy()
 
         # ── Base Canvas Assembly ────────────────────────────────────────────
         frame = Image.new("RGBA", (width, height), (10, 12, 18, 255))

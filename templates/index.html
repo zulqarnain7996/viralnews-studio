@@ -1173,13 +1173,28 @@
               </div>
             </div>
 
-            <!-- Multi-Image URLs for Slideshow -->
-            <div class="mb-3">
-              <label class="form-label small text-white fw-bold d-flex justify-content-between mb-1">
-                <span><i class="fa-solid fa-images me-1 text-success"></i> SLIDESHOW IMAGES (Single or Multiple)</span>
-                <span class="small text-white-50">Separate multiple URLs with commas</span>
-              </label>
-              <textarea id="videoOptImages" class="form-control form-control-sm bg-dark border-secondary text-white font-monospace" rows="2" placeholder="https://example.com/photo1.jpg, https://example.com/photo2.jpg"></textarea>
+            <!-- Multi-Image Scene Director -->
+            <div class="mb-3 p-3 rounded bg-black bg-opacity-25 border border-secondary">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label small text-white fw-bold mb-0">
+                  <i class="fa-solid fa-photo-film me-1 text-success"></i> SCENE PHOTOS (Changes Every 2.5s)
+                </label>
+                <div>
+                  <input type="file" id="videoOptFilePicker" multiple accept="image/*" class="d-none" onchange="handleVideoImageFiles(this)">
+                  <button type="button" class="btn btn-sm btn-outline-warning fw-bold py-0 px-2" onclick="document.getElementById('videoOptFilePicker').click()">
+                    <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload Photos
+                  </button>
+                </div>
+              </div>
+
+              <!-- Interactive Thumbnail Grid -->
+              <div id="videoImagesPreviewGrid" class="d-flex gap-2 flex-wrap mb-2"></div>
+
+              <textarea id="videoOptImages" class="form-control form-control-sm bg-dark border-secondary text-white font-monospace" rows="2" placeholder="Or paste image URLs (separate by new line or comma)..." oninput="handleVideoImageTextarea(this)"></textarea>
+              <div class="small text-white-50 mt-1 d-flex justify-content-between">
+                <span>💡 Tip: Each photo becomes a 2.5s television scene. If 1 photo is used, 4 cinematic angles are generated automatically!</span>
+                <span id="sceneCountBadge" class="badge bg-secondary text-white">1 Scene</span>
+              </div>
             </div>
 
             <!-- Custom Voiceover Narrative Script -->
@@ -1297,6 +1312,84 @@
   <script>
   let _lastVideoResult = null;
   let _videoTimerInterval = null;
+  let _videoImageList = [];
+
+  function renderVideoImageGrid() {
+    const grid = document.getElementById('videoImagesPreviewGrid');
+    const badge = document.getElementById('sceneCountBadge');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (!_videoImageList || _videoImageList.length === 0) {
+      grid.innerHTML = '<span class="text-white-50 small p-1">No images selected yet. Will use current Studio image with 4 automatic camera angles.</span>';
+      if (badge) badge.innerText = '1 Base Photo (4 Angles)';
+      return;
+    }
+
+    _videoImageList.forEach((imgSrc, idx) => {
+      const card = document.createElement('div');
+      card.className = 'position-relative border border-secondary rounded overflow-hidden shadow-sm';
+      card.style.cssText = 'width: 105px; height: 75px; background: #111; flex-shrink: 0;';
+
+      const img = document.createElement('img');
+      img.src = imgSrc;
+      img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+
+      const tag = document.createElement('span');
+      tag.className = 'position-absolute top-0 start-0 badge bg-danger text-white';
+      tag.style.cssText = 'font-size: 9px; padding: 2px 4px; border-radius: 0 0 4px 0;';
+      tag.innerText = `Scene ${idx + 1} (${(idx * 2.5).toFixed(1)}s)`;
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'position-absolute top-0 end-0 btn btn-sm btn-dark text-danger p-0 d-flex align-items-center justify-content-center';
+      delBtn.style.cssText = 'width: 20px; height: 20px; font-size: 13px; font-weight: bold; line-height: 1; border-radius: 0 0 0 4px;';
+      delBtn.innerHTML = '×';
+      delBtn.onclick = (e) => {
+        e.stopPropagation();
+        removeVideoImage(idx);
+      };
+
+      card.appendChild(img);
+      card.appendChild(tag);
+      card.appendChild(delBtn);
+      grid.appendChild(card);
+    });
+
+    if (badge) {
+      const totalSec = (_videoImageList.length * 2.5).toFixed(1);
+      badge.innerText = `${_videoImageList.length} Scene${_videoImageList.length > 1 ? 's' : ''} (~${totalSec}s)`;
+    }
+  }
+
+  function removeVideoImage(idx) {
+    _videoImageList.splice(idx, 1);
+    const textarea = document.getElementById('videoOptImages');
+    if (textarea) {
+      textarea.value = _videoImageList.filter(u => u.startsWith('http')).join('\n');
+    }
+    renderVideoImageGrid();
+  }
+
+  function handleVideoImageFiles(input) {
+    if (!input.files || input.files.length === 0) return;
+    Array.from(input.files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        _videoImageList.push(e.target.result);
+        renderVideoImageGrid();
+      };
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  function handleVideoImageTextarea(textarea) {
+    const lines = (textarea.value || '').split(/[\r\n,]+/).map(s => s.trim()).filter(Boolean);
+    const base64s = _videoImageList.filter(u => u.startsWith('data:image'));
+    _videoImageList = [...base64s, ...lines];
+    renderVideoImageGrid();
+  }
 
   function getCurrentStudioArticle() {
     const inputTitle = document.getElementById('studioTitleInput')?.value?.trim();
@@ -1353,10 +1446,13 @@
       scriptInput.value = article.title + (article.summary ? (isUrdu ? '۔ ' : '. ') + article.summary : '');
     }
 
+    const initialImg = document.getElementById('studioImageUrlInput')?.value || article.image_url || '';
+    _videoImageList = initialImg ? [initialImg] : [];
     const imgInput = document.getElementById('videoOptImages');
     if (imgInput) {
-      imgInput.value = document.getElementById('studioImageUrlInput')?.value || article.image_url || '';
+      imgInput.value = initialImg;
     }
+    renderVideoImageGrid();
 
     document.getElementById('videoGenStatus').classList.add('d-none');
     document.getElementById('videoGenSpinner').classList.add('d-none');
@@ -1415,7 +1511,17 @@
     const bg_music_volume = parseFloat(document.getElementById('videoOptMusicVol')?.value || '0.20');
     const custom_music_url = document.getElementById('videoOptCustomMusic')?.value?.trim() || null;
     const transition = 'ken_burns';
-    const rawImages = (document.getElementById('videoOptImages')?.value || customImg || '').split(',').map(s => s.trim()).filter(Boolean);
+    
+    // Gather all scene images (uploaded files + URLs)
+    let finalImages = [..._videoImageList];
+    if (finalImages.length === 0) {
+      const rawText = document.getElementById('videoOptImages')?.value || '';
+      finalImages = rawText.split(/[\r\n,]+/).map(s => s.trim()).filter(Boolean);
+    }
+    if (finalImages.length === 0 && customImg) {
+      finalImages = [customImg];
+    }
+
     const narrative_text = document.getElementById('videoOptScript')?.value || article.title;
     const mute_audio = (voice_id === 'mute');
 
@@ -1428,8 +1534,8 @@
       article: article,
       page_name: pageName,
       page_handle: pageHandle,
-      custom_image_url: rawImages[0] || customImg,
-      image_urls: rawImages,
+      custom_image_url: finalImages[0] || customImg,
+      image_urls: finalImages,
       card_image_data: cardImageData,
       aspect_ratio: aspect_ratio,
       voice_id: voice_id,
