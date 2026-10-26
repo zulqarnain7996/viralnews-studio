@@ -133,9 +133,25 @@ async function loadAppSettings() {
       appState.settings = data.settings;
       applySettingsToUI(data.settings);
 
-      // Keep client-side vault in sync with latest settings
+      // Keep client-side vault in sync with latest settings — but NEVER overwrite
+      // non-empty local credentials with empty server values (protects against
+      // Render container reboot wiping the SQLite DB)
       try {
-        localStorage.setItem('viralnews_vault_settings', JSON.stringify(data.settings));
+        const existingVault = JSON.parse(localStorage.getItem('viralnews_vault_settings') || '{}');
+        const protectedKeys = ['fb_page_id', 'fb_access_token', 'telegram_bot_token', 'telegram_channel_id', 'webhook_url', 'page_name', 'page_handle'];
+        const mergedVault = { ...existingVault };
+        for (const [k, v] of Object.entries(data.settings)) {
+          if (protectedKeys.includes(k)) {
+            // Only overwrite if server has a real value; keep local if server is empty
+            if (v && String(v).trim()) {
+              mergedVault[k] = v;
+            }
+            // else: keep existingVault[k]
+          } else {
+            mergedVault[k] = v;
+          }
+        }
+        localStorage.setItem('viralnews_vault_settings', JSON.stringify(mergedVault));
       } catch (e) { /* ignore */ }
     }
   } catch (err) {

@@ -505,10 +505,13 @@
                   <select id="autoPilotInterval" class="form-select bg-dark border-secondary text-white">
                     <option value="1">Every 1 Hour (High-Frequency Newsdesk)</option>
                     <option value="2">Every 2 Hours (Breaking Alerts)</option>
+                    <option value="3">Every 3 Hours</option>
                     <option value="4" selected>Every 4 Hours (Recommended)</option>
+                    <option value="5">Every 5 Hours</option>
                     <option value="6">Every 6 Hours</option>
-                    <option value="12">Twice Daily (Morning & Evening)</option>
-                    <option value="24">Once Daily</option>
+                    <option value="8">Every 8 Hours</option>
+                    <option value="12">Twice Daily (Every 12 Hours)</option>
+                    <option value="24">Once Daily (Every 24 Hours)</option>
                   </select>
                 </div>
 
@@ -516,10 +519,16 @@
                 <div class="mb-3">
                   <label class="form-label text-white">TARGET CATEGORY FOR AUTO-PILOT</label>
                   <select id="autoPilotCategory" class="form-select bg-dark border-secondary text-white">
-                    <option value="trending" selected>🔥 Trending & Viral (Top stories)</option>
+                    <option value="trending" selected>🔥 Trending & Viral (Top Stories)</option>
                     <option value="pakistan">🇵🇰 Pakistan National News</option>
-                    <option value="local">📍 Local City News</option>
                     <option value="world">🌍 World Breaking News</option>
+                    <option value="war">⚔️ War & Defense Updates</option>
+                    <option value="iran_us">🚀 Iran vs US / Middle East</option>
+                    <option value="russia_ukraine">🛡️ Russia vs Ukraine Frontline</option>
+                    <option value="china_india">⚡ China vs India & Regional</option>
+                    <option value="tech">🤖 Tech & Artificial Intelligence</option>
+                    <option value="local">📍 Local City News</option>
+                    <option value="all">🌐 All Categories Combined (Round-Robin)</option>
                   </select>
                 </div>
 
@@ -527,10 +536,11 @@
                 <div class="mb-3">
                   <label class="form-label text-white">POSTS PER CYCLE</label>
                   <select id="autoPilotMaxPosts" class="form-select bg-dark border-secondary text-white">
-                    <option value="1">1 Top Article</option>
-                    <option value="2" selected>2 Top Articles</option>
-                    <option value="3">3 Top Articles</option>
-                    <option value="5">5 Top Articles</option>
+                    <option value="1">1 Post per cycle</option>
+                    <option value="2" selected>2 Posts per cycle</option>
+                    <option value="3">3 Posts per cycle</option>
+                    <option value="4">4 Posts per cycle</option>
+                    <option value="5">5 Posts per cycle</option>
                   </select>
                 </div>
 
@@ -538,17 +548,14 @@
                 <div class="mb-3">
                   <label class="form-label text-white">CARD TEMPLATE STYLE</label>
                   <select id="autoPilotTheme" class="form-select bg-dark border-secondary text-white">
-                    <option value="turkiye_urdu_split" selected>🇹🇷 Türkiye Urdu Red (Default)</option>
-                    <option value="neon_cyber_split">⚡ Cyber Broadcast Pro</option>
-                    <option value="royal_gold_split">👑 Royal Velvet & Gold</option>
-                    <option value="vox_spotlight_dark">🌍 Global Spotlight</option>
-                    <option value="ticker_live_tv">📺 TV Live Ticker</option>
-                    <option value="cinematic_letterbox">🎬 Cinematic Letterbox</option>
-                    <option value="dw_quote_blue">🔵 DW Urdu Sky Blue</option>
-                    <option value="axios_minimal">📰 Axios Minimal</option>
-                    <option value="bbc_broadcast">📡 BBC Broadcast</option>
-                    <option value="aurora_emerald">🌿 Aurora Emerald</option>
-                    <option value="glass_prism">🔮 Glass Prism</option>
+                    <option value="turkiye_urdu_split" selected>🇹🇷 Türkiye Urdu Split (Red/Yellow Headline)</option>
+                    <option value="combat_steel_war">⚔️ Combat Steel War (Military Dark & Red Alert)</option>
+                    <option value="breaking_red">🚨 Broadcast Breaking News (Crimson Banner)</option>
+                    <option value="neon_cyber_split">⚡ Cyber Neon Obsidian (Electric Cyan & Yellow)</option>
+                    <option value="royal_gold_split">👑 Royal Velvet & Gold (Burgundy & Gold)</option>
+                    <option value="dw_quote_blue">🔵 DW Urdu Sky Blue (Spotlight & Navy)</option>
+                    <option value="ticker_live_tv">📺 TV 24/7 Live Ticker (Broadcast Lower-Third)</option>
+                    <option value="cinematic_letterbox">🎬 Cinematic Letterbox Dark</option>
                   </select>
                 </div>
 

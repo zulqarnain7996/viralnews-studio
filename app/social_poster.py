@@ -332,7 +332,22 @@ def test_facebook_connection(page_id, access_token, force=True):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def post_to_facebook(image_path, caption, test_mode=False, max_retries=3):
+def _resolve_clean_title(title, caption):
+    """Extracts and normalizes clean headline string without emoji artifacts."""
+    if title and str(title).strip():
+        t = str(title).strip()
+    elif caption and "\n" in caption:
+        lines = [l.strip() for l in caption.split("\n") if l.strip()]
+        t = lines[1] if len(lines) > 1 else lines[0]
+    elif caption:
+        t = str(caption)[:80].strip()
+    else:
+        t = "News Update"
+    import re
+    cleaned = re.sub(r'^[📢🚨🔥⚔️🇵🇰🌍📍🛡️⚡\s\-–—:]+', '', t).strip()
+    return cleaned or t[:80]
+
+def post_to_facebook(image_path, caption, test_mode=False, max_retries=3, title=None):
     """
     Posts image or video + caption to Facebook Page using Meta Graph API.
     Features:
@@ -341,6 +356,7 @@ def post_to_facebook(image_path, caption, test_mode=False, max_retries=3):
       • Active cooldown protection & publishing queue routing
       • Automatic exponential backoff retries for transient failures
     """
+    clean_post_title = _resolve_clean_title(title, caption)
     page_id = get_setting("fb_page_id", "").strip()
     access_token = get_setting("fb_access_token", "").strip()
     simulation_mode = get_setting("simulation_mode", "false").lower() == "true" or test_mode
@@ -354,7 +370,7 @@ def post_to_facebook(image_path, caption, test_mode=False, max_retries=3):
     if simulation_mode:
         mock_id = f"sim_fb_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         log_post(
-            title=caption.split("\n")[1] if "\n" in caption else caption[:60],
+            title=clean_post_title,
             platform="facebook",
             card_image_path=image_path,
             caption=caption,
@@ -432,7 +448,7 @@ def post_to_facebook(image_path, caption, test_mode=False, max_retries=3):
                     post_id = data["id"]
                     post_url = f"https://facebook.com/{post_id}"
                     log_post(
-                        title=caption.split("\n")[1] if "\n" in caption else caption[:60],
+                        title=clean_post_title,
                         platform="facebook",
                         card_image_path=image_path,
                         caption=caption,
@@ -483,7 +499,7 @@ def post_to_facebook(image_path, caption, test_mode=False, max_retries=3):
                     })
 
                     log_post(
-                        title=caption.split("\n")[1] if "\n" in caption else caption[:60],
+                        title=clean_post_title,
                         platform="facebook",
                         card_image_path=image_path,
                         caption=caption,
@@ -518,7 +534,7 @@ def post_to_facebook(image_path, caption, test_mode=False, max_retries=3):
                     _fb_connection_cache["key"] = None
 
                 log_post(
-                    title=caption.split("\n")[1] if "\n" in caption else caption[:60],
+                    title=clean_post_title,
                     platform="facebook",
                     card_image_path=image_path,
                     caption=caption,
@@ -546,10 +562,11 @@ def post_to_facebook(image_path, caption, test_mode=False, max_retries=3):
     return {"success": False, "error": "Maximum retries exceeded."}
 
 
-def post_to_telegram(image_path, caption):
+def post_to_telegram(image_path, caption, title=None):
     """
     Posts photo or video + caption directly to a Telegram Channel via Bot API.
     """
+    clean_post_title = _resolve_clean_title(title, caption)
     bot_token = get_setting("telegram_bot_token", "").strip()
     channel_id = get_setting("telegram_channel_id", "").strip()
 
@@ -575,7 +592,7 @@ def post_to_telegram(image_path, caption):
             res_data = res.json()
             if res.status_code == 200 and res_data.get("ok"):
                 log_post(
-                    title=caption.split("\n")[1] if "\n" in caption else caption[:60],
+                    title=clean_post_title,
                     platform="telegram",
                     card_image_path=image_path,
                     caption=caption,
@@ -590,10 +607,11 @@ def post_to_telegram(image_path, caption):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-def post_to_webhook(image_path, caption, article_data=None):
+def post_to_webhook(image_path, caption, article_data=None, title=None):
     """
     Dispatches news card & caption to webhook (Zapier, Make.com, TikTok webhook, Discord)
     """
+    clean_post_title = _resolve_clean_title(title or (article_data.get("title") if isinstance(article_data, dict) else None), caption)
     webhook_url = get_setting("webhook_url", "").strip()
 
     if not webhook_url:
@@ -615,7 +633,7 @@ def post_to_webhook(image_path, caption, article_data=None):
         res = requests.post(webhook_url, json=payload, timeout=15)
         is_success = res.status_code in [200, 201, 204]
         log_post(
-            title=caption.split("\n")[1] if "\n" in caption else caption[:60],
+            title=clean_post_title,
             platform="webhook_tiktok",
             card_image_path=image_path,
             caption=caption,

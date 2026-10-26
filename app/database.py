@@ -382,7 +382,24 @@ def get_queue_stats():
         }
 
 
+def normalize_news_text(text):
+    """Strips URLs, emojis, symbols and normalizes whitespace for exact/fuzzy deduplication."""
+    if not text:
+        return ""
+    import re
+    t = re.sub(r'https?://\S+', '', str(text))
+    # Keep alphanumeric characters and Arabic/Urdu unicode range (\u0600-\u06FF)
+    cleaned = re.sub(r'[^\w\s\u0600-\u06FF]', ' ', t)
+    return re.sub(r'\s+', ' ', cleaned).strip().lower()
+
 def log_post(title, platform, card_image_path, caption, post_id_or_url, status="success", error_message=""):
+    # Strip prepended emojis or broadcast markers from title to ensure clean title tracking
+    clean_title = str(title).strip()
+    import re
+    clean_title = re.sub(r'^[📢🚨🔥⚔️🇵🇰🌍📍\s\-–—:]+', '', clean_title).strip()
+    if not clean_title:
+        clean_title = str(title).strip()[:100]
+
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("""
@@ -390,7 +407,7 @@ def log_post(title, platform, card_image_path, caption, post_id_or_url, status="
             (title, platform, card_image_path, caption, post_id_or_url, status, error_message, published_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            title, platform, card_image_path, caption, post_id_or_url, status, error_message, datetime.now().isoformat()
+            clean_title, platform, card_image_path, caption, post_id_or_url, status, error_message, datetime.now().isoformat()
         ))
         conn.commit()
         return cursor.lastrowid
@@ -416,12 +433,86 @@ def get_scheduler_logs(limit=30):
         cursor.execute("SELECT * FROM scheduler_logs ORDER BY id DESC LIMIT ?", (limit,))
         return [dict(r) for r in cursor.fetchall()]
 
-def is_article_posted(link_or_title):
+def is_article_posted(link_or_title, article_id=None, link=None):
+    """
+    Exhaustive multi-tier check to guarantee NO duplicates are ever posted:
+    1. Checks article_id in articles and post_queue.
+    2. Checks link in articles, post_history, and post_queue.
+    3. Normalizes title text and performs prefix/containment checks across
+       both post_history (all time) and post_queue (pending/processing/published).
+    """
+    if not link_or_title and not article_id and not link:
+        return False
+
+    norm_query = normalize_news_text(link_or_title)
+
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) as count FROM post_history WHERE title = ?", (link_or_title,))
-        row = cursor.fetchone()
-        return (row["count"] > 0)
+
+        # 1. Exact match on article_id if provided
+        if article_id:
+            cursor.execute("SELECT status FROM articles WHERE id = ?", (article_id,))
+            art_row = cursor.fetchone()
+            if art_row and art_row["status"] in ("posted", "queued"):
+                return True
+            cursor.execute("SELECT COUNT(*) as count FROM post_queue WHERE article_id = ? AND status IN ('pending', 'processing', 'published')", (article_id,))
+            if cursor.fetchone()["count"] > 0:
+                return True
+
+        # 2. Match on link / URL
+        target_link = link or (link_or_title if str(link_or_title).startswith("http") else None)
+        if target_link:
+            cursor.execute("SELECT COUNT(*) as count FROM articles WHERE link = ? AND status IN ('posted', 'queued')", (target_link,))
+            if cursor.fetchone()["count"] > 0:
+                return True
+            cursor.execute("SELECT COUNT(*) as count FROM post_history WHERE caption LIKE ? OR post_id_or_url = ?", (f"%{target_link}%", target_link))
+            if cursor.fetchone()["count"] > 0:
+                return True
+            cursor.execute("SELECT COUNT(*) as count FROM post_queue WHERE caption LIKE ? AND status IN ('pending', 'processing', 'published')", (f"%{target_link}%",))
+            if cursor.fetchone()["count"] > 0:
+                return True
+
+        # If normalized title is too short, rely on exact matches
+        if len(norm_query) < 10:
+            cursor.execute("SELECT COUNT(*) as count FROM post_history WHERE title = ?", (str(link_or_title).strip(),))
+            if cursor.fetchone()["count"] > 0:
+                return True
+            cursor.execute("SELECT COUNT(*) as count FROM post_queue WHERE title = ? AND status IN ('pending', 'processing', 'published')", (str(link_or_title).strip(),))
+            return cursor.fetchone()["count"] > 0
+
+        prefix_len = min(28, len(norm_query))
+
+        # 3. Check post_history titles and captions
+        cursor.execute("SELECT title, caption FROM post_history ORDER BY id DESC LIMIT 250")
+        for row in cursor.fetchall():
+            h_title = row["title"] or ""
+            h_caption = row["caption"] or ""
+            norm_h = normalize_news_text(h_title)
+
+            if len(norm_h) >= 12:
+                if norm_query[:prefix_len] in norm_h or norm_h[:prefix_len] in norm_query:
+                    return True
+
+            norm_c = normalize_news_text(h_caption)
+            if len(norm_c) >= 15 and norm_query[:prefix_len] in norm_c:
+                return True
+
+        # 4. Check post_queue (pending, processing, published)
+        cursor.execute("SELECT title, caption FROM post_queue WHERE status IN ('pending', 'processing', 'published') ORDER BY id DESC LIMIT 100")
+        for row in cursor.fetchall():
+            q_title = row["title"] or ""
+            q_caption = row["caption"] or ""
+            norm_q = normalize_news_text(q_title)
+
+            if len(norm_q) >= 12:
+                if norm_query[:prefix_len] in norm_q or norm_q[:prefix_len] in norm_query:
+                    return True
+
+            norm_qc = normalize_news_text(q_caption)
+            if len(norm_qc) >= 15 and norm_query[:prefix_len] in norm_qc:
+                return True
+
+        return False
 
 # Auto-initialize database schema on module load
 try:

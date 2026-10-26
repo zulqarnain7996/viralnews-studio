@@ -42,16 +42,21 @@ def sync_vault(req: SettingsUpdateRequest):
     Called by client on startup with localStorage vault data.
     Ensures that if Render container rebooted or database reset,
     user credentials (FB Page ID, Token, TG Token) are instantly restored to SQLite.
+    The client's vault is the single source of truth for sensitive credentials
+    because Render's ephemeral filesystem wipes SQLite on every deploy.
     """
     current = get_all_settings()
     updates = {}
+    # Credential keys that the client is ALWAYS authoritative for
+    credential_keys = {"fb_page_id", "fb_access_token", "telegram_bot_token", "telegram_channel_id", "webhook_url"}
+
     for k, v in req.settings.items():
         if v and str(v).strip():
-            # If current setting is empty or default, update it with client's saved vault
-            if not current.get(k) or current.get(k) == "":
-                updates[k] = v
-            # Always ensure tokens and IDs are synced if client has them
-            elif k in ["fb_page_id", "fb_access_token", "telegram_bot_token", "telegram_channel_id"]:
+            if k in credential_keys:
+                # Client vault is always the source of truth for credentials
+                updates[k] = str(v).strip()
+            elif not current.get(k) or current.get(k) == "":
+                # For non-credential settings, only fill if server is empty
                 updates[k] = v
 
     if updates:

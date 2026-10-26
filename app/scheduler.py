@@ -39,7 +39,7 @@ def process_publishing_queue():
 
     try:
         if platform == "facebook":
-            res = post_to_facebook(image_path, caption)
+            res = post_to_facebook(image_path, caption, title=item.get("title"))
             if res.get("success") and res.get("mode") == "live":
                 update_queue_item_status(queue_id, "published", response_log=json.dumps(res))
                 log_scheduler("queue_success", f"Queued post #{queue_id} published successfully to Facebook Page.")
@@ -49,7 +49,7 @@ def process_publishing_queue():
             else:
                 update_queue_item_status(queue_id, "failed", response_log=json.dumps(res))
         elif platform == "telegram":
-            res = post_to_telegram(image_path, caption)
+            res = post_to_telegram(image_path, caption, title=item.get("title"))
             if res.get("success"):
                 update_queue_item_status(queue_id, "published", response_log=json.dumps(res))
             else:
@@ -104,15 +104,52 @@ def run_autopilot_cycle(manual_trigger=False):
     log_scheduler("auto_pilot_start", f"Running cycle for category: {category}, language: {language}, theme: {theme}, max posts: {max_posts}")
 
     try:
-        # Fetch fresh news
-        articles = fetch_news_by_category(category=category, city=local_city, language=language, limit=20)
+        from app.database import normalize_news_text
+
+        # Fetch fresh news (supports single category or 'all' round-robin)
+        if category == "all":
+            articles = []
+            for sub_cat in ["trending", "war", "pakistan", "world", "tech"]:
+                sub_arts = fetch_news_by_category(category=sub_cat, city=local_city, language=language, limit=6)
+                articles.extend(sub_arts)
+        else:
+            articles = fetch_news_by_category(category=category, city=local_city, language=language, limit=25)
+
         unposted = []
+        selected_titles_norm = []
 
         for art in articles:
-            if not is_article_posted(art["title"]):
-                unposted.append(art)
-                if len(unposted) >= max_posts:
-                    break
+            raw_title = art.get("title", "").strip()
+            if not raw_title:
+                continue
+
+            # Check exhaustive database history and queue
+            if is_article_posted(raw_title, article_id=art.get("id"), link=art.get("link")):
+                continue
+
+            norm_t = normalize_news_text(raw_title)
+            if len(norm_t) < 10:
+                continue
+
+            # Batch deduplication: prevent selecting twin stories from different RSS sources
+            is_dup_in_batch = False
+            words_new = set(norm_t.split())
+            for sel_norm in selected_titles_norm:
+                words_sel = set(sel_norm.split())
+                if words_new and words_sel:
+                    intersection = words_new.intersection(words_sel)
+                    sim = len(intersection) / min(len(words_new), len(words_sel))
+                    if sim > 0.48 or norm_t[:28] == sel_norm[:28]:
+                        is_dup_in_batch = True
+                        break
+
+            if is_dup_in_batch:
+                continue
+
+            unposted.append(art)
+            selected_titles_norm.append(norm_t)
+            if len(unposted) >= max_posts:
+                break
 
         if not unposted:
             log_scheduler("auto_pilot_complete", "No new unposted articles found. Newsroom is up to date.", "info")
@@ -136,11 +173,11 @@ def run_autopilot_cycle(manual_trigger=False):
 
             if idx == 0:
                 # First post publishes immediately based on enabled platforms
-                fb_res = post_to_facebook(card_res["file_path"], caption) if fb_enabled else {"mode": "disabled"}
+                fb_res = post_to_facebook(card_res["file_path"], caption, title=art.get("title")) if fb_enabled else {"mode": "disabled"}
                 if webhook_enabled:
-                    post_to_webhook(card_res["file_path"], caption, art)
+                    post_to_webhook(card_res["file_path"], caption, art, title=art.get("title"))
                 if tg_enabled:
-                    post_to_telegram(card_res["file_path"], caption)
+                    post_to_telegram(card_res["file_path"], caption, title=art.get("title"))
 
                 posted_count += 1
                 results.append({
@@ -187,20 +224,31 @@ def run_autopilot_cycle(manual_trigger=False):
 
 def keep_alive_ping():
     """
-    Pings the server's own public URL (e.g. https://viralnews-studio.onrender.com/health)
-    every 8 minutes. Because the request travels through public DNS / Render's edge proxy,
-    Render registers active incoming HTTP traffic, resetting the 15-minute inactivity sleep counter
-    and keeping the service awake 24/7!
+    Pings the server's own public URL every 8 minutes via the external public URL.
+    This goes through Render's edge proxy/load balancer, registering real HTTP traffic
+    that resets the 15-minute inactivity sleep timer.
+    Also pings /api/settings to keep the full application stack warm.
     """
     import requests
     public_url = get_setting("app_public_url", "https://viralnews-studio.onrender.com").rstrip("/")
+    if not public_url or "localhost" in public_url or "127.0.0.1" in public_url:
+        public_url = "https://viralnews-studio.onrender.com"
+
+    # Primary: lightweight /health ping
     try:
         ping_url = f"{public_url}/health"
-        res = requests.get(ping_url, timeout=15)
+        res = requests.get(ping_url, timeout=20, headers={"User-Agent": "ViralNewsStudio-KeepAlive/1.0"})
         if res.status_code == 200:
-            log_scheduler("keep_alive_ping", f"Self-ping to {ping_url} (HTTP 200) — Server awake 24/7", "info")
+            log_scheduler("keep_alive_ping", f"Self-ping to {ping_url} (HTTP {res.status_code}) — Server awake 24/7", "info")
+        else:
+            log_scheduler("keep_alive_ping", f"Self-ping to {ping_url} returned HTTP {res.status_code}", "warning")
     except Exception as e:
-        # Ignore network errors on localhost or during startup
+        log_scheduler("keep_alive_ping", f"Primary ping failed: {e}", "warning")
+
+    # Secondary: heavier GET to keep full app stack warm
+    try:
+        requests.get(f"{public_url}/api/settings", timeout=15, headers={"User-Agent": "ViralNewsStudio-KeepAlive/1.0"})
+    except Exception:
         pass
 
 def init_scheduler():
@@ -223,23 +271,28 @@ def init_scheduler():
             id='queue_worker_job',
             replace_existing=True
         )
-        # 3. 24/7 Keep-Alive Self-Pinger (runs every 8 minutes to prevent Render sleep)
+        # 3. 24/7 Keep-Alive Self-Pinger (runs every 5 minutes to prevent Render sleep)
         scheduler.add_job(
             keep_alive_ping,
             'interval',
-            minutes=8,
+            minutes=5,
             id='keep_alive_ping_job',
             replace_existing=True
         )
         scheduler.start()
-        print(f"[Scheduler] Started background auto-pilot every {interval_hours}h, queue processor every 5m, and keep-alive pinger every 8m.")
+        print(f"[Scheduler] Started background auto-pilot every {interval_hours}h, queue processor every 5m, and keep-alive pinger every 5m.")
 
 def update_scheduler_interval(interval_hours):
     """Updates the execution interval of the running scheduler."""
     if scheduler.running:
-        scheduler.reschedule_job(
-            'autopilot_job',
-            trigger='interval',
-            hours=int(interval_hours)
-        )
+        try:
+            hrs = max(1, int(interval_hours))
+            scheduler.reschedule_job(
+                'autopilot_job',
+                trigger='interval',
+                hours=hrs
+            )
+            log_scheduler("reschedule_success", f"Auto-pilot rescheduled to run every {hrs} hour(s).")
+        except Exception as e:
+            log_scheduler("reschedule_error", f"Failed to reschedule: {e}", "error")
 

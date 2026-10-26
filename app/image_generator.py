@@ -28,9 +28,15 @@ def shape_urdu(text):
         return text
 
 def get_font(font_name="impact.ttf", size=48, is_urdu=False):
+    """
+    Robust multi-platform font loader.
+    Prioritizes bundled NotoSansArabic & NotoNastaliqUrdu (which are bundled in the repo),
+    ensuring identical typography across Windows and Linux / Render.
+    """
     if is_urdu:
         urdu_paths = [
             os.path.join(FONTS_DIR, "NotoSansArabic-Bold.ttf"),
+            os.path.join(FONTS_DIR, "NotoNastaliqUrdu-Bold.ttf"),
             r"C:\Windows\Fonts\tahoma.ttf",
             r"C:\Windows\Fonts\arial.ttf"
         ]
@@ -42,10 +48,12 @@ def get_font(font_name="impact.ttf", size=48, is_urdu=False):
                     continue
 
     font_paths = [
+        os.path.join(FONTS_DIR, "NotoSansArabic-Bold.ttf"),  # Guaranteed Latin+Urdu glyphs
         os.path.join(r"C:\Windows\Fonts", font_name),
         os.path.join(r"C:\Windows\Fonts", "arialbd.ttf"),
         os.path.join(r"C:\Windows\Fonts", "arial.ttf"),
-        os.path.join(r"C:\Windows\Fonts", "calibrib.ttf")
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
     ]
     for p in font_paths:
         if os.path.exists(p):
@@ -128,21 +136,38 @@ def generate_news_card(article, options=None):
     bg_img = fetch_image_from_url(img_url)
 
     # ========================================================
-    # TEMPLATE 1: BROADCAST SPLIT & PRO STYLES
+    # TEMPLATE 1: BROADCAST SPLIT & PRO STYLES (Studio Quality)
     # ========================================================
-    if theme_key in ["turkiye_urdu_split", "turkiye_emerald_split", "turkiye_dark_split", "neon_cyber_split", "royal_gold_split", "vox_spotlight_dark", "ticker_live_tv", "cinematic_letterbox"]:
+    if theme_key in [
+        "turkiye_urdu_split", "combat_steel_war", "breaking_red", "turkiye_emerald_split", 
+        "turkiye_dark_split", "neon_cyber_split", "royal_gold_split", "vox_spotlight_dark", 
+        "ticker_live_tv", "cinematic_letterbox", "pakistan_green", "viral_dark"
+    ]:
         split_y = int(height * 0.52)
         
-        # 1. Top Half: Photo with Logo Box
+        # 1. Top Half: Photo with Logo Box or Studio Backdrop
         if bg_img:
             photo_h = split_y
             photo_cropped = ImageOps.fit(bg_img, (width, photo_h), centering=(0.5, 0.5))
             card.paste(photo_cropped, (0, 0))
         else:
-            grad = Image.new("RGBA", (width, split_y), (30, 35, 45, 255))
+            # Energetic broadcast studio backdrop with vignette and grid lines
+            grad = Image.new("RGBA", (width, split_y), (25, 30, 44, 255))
+            d_grad = ImageDraw.Draw(grad)
+            for i in range(split_y):
+                t = i / split_y
+                r = int(20 + 20 * t)
+                g = int(24 + 16 * t)
+                b = int(36 + 26 * t)
+                d_grad.line([(0, i), (width, i)], fill=(r, g, b, 255))
+            # Subtle broadcast studio grid
+            for gx in range(0, width, 70):
+                d_grad.line([(gx, 0), (gx, split_y)], fill=(255, 255, 255, 14))
+            for gy in range(0, split_y, 70):
+                d_grad.line([(0, gy), (width, gy)], fill=(255, 255, 255, 14))
             card.paste(grad, (0, 0))
 
-        # Top-left Logo Box - Adaptive Pill (expands with text, no overflow/crossing)
+        # Top-left Logo Box - Adaptive Pill
         draw = ImageDraw.Draw(card)
         font_logo = get_font(size=24, is_urdu=is_urdu_str(page_name))
         display_page_name = shape_urdu(page_name)
@@ -152,15 +177,17 @@ def generate_news_card(article, options=None):
         
         logo_box_w = max(text_w + 48, 180)
         logo_box_h = 56
-        if theme_key == "neon_cyber_split":
+        if theme_key in ["combat_steel_war"]:
+            logo_bg = (25, 33, 46)
+        elif theme_key in ["neon_cyber_split"]:
             logo_bg = (0, 240, 255)
-        elif theme_key == "royal_gold_split":
+        elif theme_key in ["royal_gold_split"]:
             logo_bg = (255, 215, 0)
-        elif theme_key == "vox_spotlight_dark":
+        elif theme_key in ["vox_spotlight_dark"]:
             logo_bg = (204, 255, 0)
-        elif theme_key == "ticker_live_tv":
-            logo_bg = (204, 0, 16)
-        elif theme_key == "turkiye_emerald_split":
+        elif theme_key in ["ticker_live_tv", "breaking_red"]:
+            logo_bg = (210, 0, 20)
+        elif theme_key in ["turkiye_emerald_split", "pakistan_green"]:
             logo_bg = (0, 120, 50)
         else:
             logo_bg = (165, 0, 10)
@@ -171,8 +198,41 @@ def generate_news_card(article, options=None):
         text_y = 25 + (logo_box_h - text_h) // 2 - 2
         draw.text((text_x, text_y), display_page_name, font=font_logo, fill=logo_text_color)
 
+        # Top-right Alert Strap / Category Pill
+        category_name = article.get("category", "breaking").lower()
+        if theme_key == "combat_steel_war" or category_name in ["war", "iran_us", "russia_ukraine", "china_india"]:
+            strap_text = "⚔️ عسکری اپڈیٹ | DEFENSE ALERT" if is_urdu else "⚔️ DEFENSE UPDATE"
+            strap_bg = (200, 25, 35)
+        elif category_name == "tech" or theme_key == "neon_cyber_split":
+            strap_text = "⚡ ٹیکنالوجی اپڈیٹ | TECH DESK" if is_urdu else "⚡ TECH & AI UPDATE"
+            strap_bg = (0, 160, 210)
+        elif category_name == "pakistan":
+            strap_text = "🇵🇰 پاکستان | PAKISTAN" if is_urdu else "🇵🇰 PAKISTAN ALERT"
+            strap_bg = (0, 125, 50)
+        elif category_name == "world":
+            strap_text = "🌍 عالمی خبریں | WORLD NEWS" if is_urdu else "🌍 WORLD BREAKING"
+            strap_bg = (10, 60, 160)
+        else:
+            strap_text = "🚨 بریکنگ نیوز | BREAKING NEWS" if is_urdu else "🚨 BREAKING NEWS"
+            strap_bg = (215, 0, 20)
+
+        font_strap = get_font(size=20, is_urdu=is_urdu_str(strap_text))
+        disp_strap = shape_urdu(strap_text)
+        s_bbox = font_strap.getbbox(disp_strap)
+        sw = s_bbox[2] - s_bbox[0]
+        strap_w = sw + 36
+        strap_x = width - strap_w - 25
+        draw.rounded_rectangle([(strap_x, 25), (strap_x + strap_w, 25 + 56)], radius=10, fill=strap_bg, outline=(255, 255, 255), width=2)
+        draw.text((strap_x + 18, 25 + (56 - (s_bbox[3] - s_bbox[1])) // 2 - 2), disp_strap, font=font_strap, fill=(255, 255, 255))
+
         # 2. Bottom Half: Theme Background
-        if theme_key == "turkiye_emerald_split":
+        if theme_key == "combat_steel_war":
+            bottom_color_top = (15, 20, 28)
+            bottom_color_bot = (8, 12, 18)
+        elif theme_key == "breaking_red":
+            bottom_color_top = (185, 0, 15)
+            bottom_color_bot = (105, 0, 8)
+        elif theme_key in ["turkiye_emerald_split", "pakistan_green"]:
             bottom_color_top = (1, 75, 32)
             bottom_color_bot = (0, 45, 18)
         elif theme_key == "neon_cyber_split":
@@ -194,47 +254,86 @@ def generate_news_card(article, options=None):
             bottom_color_top = (22, 25, 35)
             bottom_color_bot = (10, 12, 16)
         else:
-            bottom_color_top = (165, 0, 10)  # Rich crimson
+            bottom_color_top = (165, 0, 10)  # Rich broadcast crimson
             bottom_color_bot = (110, 0, 5)
 
-        bottom_layer = Image.new("RGBA", (width, height - split_y), bottom_color_top)
+        # Draw smooth vertical gradient in bottom half
+        bot_h = height - split_y
+        bottom_layer = Image.new("RGBA", (width, bot_h), bottom_color_top)
+        d_bot = ImageDraw.Draw(bottom_layer)
+        r1, g1, b1 = bottom_color_top
+        r2, g2, b2 = bottom_color_bot
+        for row in range(bot_h):
+            t = row / max(bot_h - 1, 1)
+            cr = int(r1 + (r2 - r1) * t)
+            cg = int(g1 + (g2 - g1) * t)
+            cb = int(b1 + (b2 - b1) * t)
+            d_bot.line([(0, row), (width, row)], fill=(cr, cg, cb, 255))
         card.paste(bottom_layer, (0, split_y))
         draw = ImageDraw.Draw(card)
 
+        # Combat steel or breaking accent divider line
+        divider_color = (255, 215, 0) if theme_key in ["combat_steel_war", "royal_gold_split"] else ((0, 240, 255) if theme_key == "neon_cyber_split" else (255, 230, 0))
+        draw.rectangle([(0, split_y), (width, split_y + 4)], fill=divider_color)
+
         # Subtle top shadow on split
         for i in range(12):
-            draw.line([(0, split_y + i), (width, split_y + i)], fill=(0, 0, 0, int(180 * (1 - i / 12))))
+            draw.line([(0, split_y + 4 + i), (width, split_y + 4 + i)], fill=(0, 0, 0, int(160 * (1 - i / 12))))
 
-        # 3. Headline Text
-        if theme_key == "royal_gold_split":
+        # 3. Headline Text & Summary Bullets
+        if theme_key in ["royal_gold_split"]:
             headline_color = (255, 215, 0)
-        elif theme_key == "neon_cyber_split":
+        elif theme_key in ["neon_cyber_split"]:
             headline_color = (0, 240, 255)
-        elif theme_key == "vox_spotlight_dark":
+        elif theme_key in ["vox_spotlight_dark"]:
             headline_color = (255, 255, 255)
+        elif theme_key == "combat_steel_war":
+            headline_color = (255, 225, 0)
         elif theme_key != "turkiye_dark_split":
             headline_color = (255, 230, 0)
         else:
             headline_color = (0, 240, 255)
-        headline_font_size = 56 if is_urdu else 52
+
+        headline_font_size = 52 if is_urdu else 48
         font_headline = get_font(size=headline_font_size, is_urdu=is_urdu)
 
-        raw_wrapped = textwrap.wrap(title, width=36 if is_urdu else 28)[:3]
+        raw_wrapped = textwrap.wrap(title, width=32 if is_urdu else 26)[:3]
         wrapped_lines = [shape_urdu(line) for line in raw_wrapped]
 
-        text_total_h = len(wrapped_lines) * (headline_font_size + 18)
-        content_space = (height - split_y - 85)
-        start_y = split_y + max(20, (content_space - text_total_h) // 2)
+        # Process Summary Highlights (if available)
+        font_summary = get_font(size=26, is_urdu=is_urdu)
+        sum_lines = []
+        if summary:
+            clean_sum = summary.replace(title, "").strip()
+            # Remove redundant punctuation
+            clean_sum = re.sub(r'^[،,؛;\s\-:]+', '', clean_sum).strip()
+            if len(clean_sum) > 20:
+                raw_sum_wrapped = textwrap.wrap(clean_sum, width=44 if is_urdu else 36)[:2]
+                sum_lines = [shape_urdu(l) for l in raw_sum_wrapped]
+
+        text_total_h = len(wrapped_lines) * (headline_font_size + 14) + (len(sum_lines) * 36 + 14 if sum_lines else 0)
+        content_space = (height - split_y - 80)
+        start_y = split_y + max(16, (content_space - text_total_h) // 2)
 
         for line in wrapped_lines:
             bbox = font_headline.getbbox(line)
             lw = bbox[2] - bbox[0]
-            # Centered headline
             lx = (width - lw) // 2
             # Dark drop shadow
-            draw.text((lx + 3, start_y + 3), line, font=font_headline, fill=(30, 0, 0))
+            draw.text((lx + 3, start_y + 3), line, font=font_headline, fill=(15, 0, 0))
             draw.text((lx, start_y), line, font=font_headline, fill=headline_color)
-            start_y += headline_font_size + 18
+            start_y += headline_font_size + 14
+
+        # Draw Summary Highlights
+        if sum_lines:
+            start_y += 10
+            for s_line in sum_lines:
+                s_bbox = font_summary.getbbox(s_line)
+                sw = s_bbox[2] - s_bbox[0]
+                sx = (width - sw) // 2
+                draw.text((sx + 2, start_y + 2), s_line, font=font_summary, fill=(10, 0, 0))
+                draw.text((sx, start_y), s_line, font=font_summary, fill=(245, 245, 250))
+                start_y += 34
 
         # 4. Footer Bar
         footer_y = height - 65

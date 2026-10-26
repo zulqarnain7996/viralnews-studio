@@ -8,5 +8,6 @@ venv/
 .env
 data/uploads/*
 !data/uploads/.gitkeep
+data/settings_vault.json
 data/generated_cards/*
 !data/generated_cards/.gitkeep
